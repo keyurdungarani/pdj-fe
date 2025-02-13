@@ -12,6 +12,7 @@ import ProductList from './admin panel/ProductList';
 
 // i want to use values from env file
 import dotenv from 'dotenv';
+import ProductAdminPanel from './admin panel/productAdminPanel';
 
 // dotenv.config(); 
 
@@ -30,6 +31,7 @@ function App() {
             <Route path="/book-appointment" element={<BookAppointment />} /> */}
             {/* <Route path="/appointment" element={<BookAppointment />} /> */}
             <Route path='/productlist' element={<ProductList />} />
+            <Route path="/productAdminPanel" element={<ProductAdminPanel />} />
           </Routes>
         </main>
         <Footer />
