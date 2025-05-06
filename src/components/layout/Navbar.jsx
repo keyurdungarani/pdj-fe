@@ -1,156 +1,134 @@
-// import { useState } from "react";
-// import { Link } from "react-router-dom";
-// import { Menu } from "lucide-react"; // Assuming you're using Lucide icons
-// import {Button} from "../components/ui/button";
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, ShoppingBag } from 'lucide-react';
+// import Logo from '../../assets/logo.png'; // Make sure to add a logo file
 
-// function Navbar() {
-//   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-//   return (
-//     <nav className="bg-white shadow-md">
-//       <div className="container mx-auto px-4">
-//         <div className="flex justify-between items-center h-16">
-//           {/* Logo */}
-//           <Link to="/" className="text-2xl font-bold text-primary">
-//             PDiamonds
-//           </Link>
-
-//           {/* Mobile menu button */}
-//           <button
-//             onClick={() => setIsMenuOpen(!isMenuOpen)}
-//             className="md:hidden p-2"
-//           >
-//             <Menu className="h-6 w-6" />
-//           </button>
-
-//           {/* Links for larger screens */}
-//           <ul className="hidden md:flex space-x-6">
-//             <li>
-//               <Link to="/" className="hover:text-primary">
-//                 Home
-//               </Link>
-//             </li>
-//             <li>
-//               <Link to="/products" className="hover:text-primary">
-//                 Products
-//               </Link>
-//             </li>
-//             <li>
-//               <Link to="/about" className="hover:text-primary">
-//                 About Us
-//               </Link>
-//             </li>
-//           </ul>
-
-//           {/* Appointment Button */}
-//           <Button className="hidden md:block">Book Appointment</Button>
-//         </div>
-
-//         {/* Mobile Menu */}
-//         {isMenuOpen && (
-//           <div className="md:hidden">
-//             <ul className="flex flex-col space-y-2 mt-2">
-//               <li>
-//                 <Link to="/" onClick={() => setIsMenuOpen(false)}>
-//                   Home
-//                 </Link>
-//               </li>
-//               <li>
-//                 <Link to="/products" onClick={() => setIsMenuOpen(false)}>
-//                   Products
-//                 </Link>
-//               </li>
-//               <li>
-//                 <Link to="/about" onClick={() => setIsMenuOpen(false)}>
-//                   About Us
-//                 </Link>
-//               </li>
-//             </ul>
-//           </div>
-//         )}
-//       </div>
-//     </nav>
-//   );
-// }
-
-// export default Navbar;
-
-
-
-import { PhoneCall, Mail, Menu } from 'lucide-react';
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '../components/ui/button';
-
-function Navbar() {
+const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+
+  const navLinks = [
+    { name: 'ENGAGEMENT', path: '/engagement' },
+    { name: 'WEDDING', path: '/wedding' },
+    { name: 'DIAMONDS', path: '/diamonds' },
+    { name: 'JEWELLERY', path: '/jewellery' },
+    { name: 'ABOUT US', path: '/why-choose-us' },
+    { name: 'CONTACT', path: '/contact' },
+  ];
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
 
   return (
-    <nav className="bg-white shadow-md">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="text-2xl font-bold text-primary">
-            PDiamonds
-          </Link>
+    <nav 
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+        scrolled ? 'bg-white shadow-md py-2' : 'bg-white/95 py-4'
+      }`}
+    >
+      <div className="container mx-auto px-4 flex justify-between items-center">
+        {/* Logo */}
+        <Link to="/" className="flex-shrink-0">
+          <img 
+            // src={Logo} 
+            alt="PDJ Jewellery" 
+            className="h-10 md:h-12"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = 'https://via.placeholder.com/150x50?text=PDJ+Jewellery';
+            }}
+          />
+        </Link>
 
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2"
-          >
-            <Menu className="h-6 w-6" />
-          </button>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-8">
-            <Link to="/" className="hover:text-primary">Home</Link>
-            <Link to="/diamonds" className="hover:text-primary">Diamonds</Link>
-            <Link to="/rings" className="hover:text-primary">Wedding Rings</Link>
-            <Link to="/custom" className="hover:text-primary">Custom Jewelry</Link>
-          </div>
-
-          {/* Contact Info */}
-          <div className="hidden md:flex items-center space-x-6">
-            <div className="flex items-center space-x-2">
-              <PhoneCall className="h-4 w-4" />
-              <span>1 5551234567</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Mail className="h-4 w-4" />
-              <span>ex@gmail.com</span>
-            </div>
-            {/* Appointment Button */}
-            <Button className="hidden md:block">Book Appointment</Button>
-          </div>
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center space-x-6">
+          {navLinks.map((link) => (
+            <Link
+              key={link.name}
+              to={link.path}
+              className={`text-sm font-medium hover:text-primary transition-colors ${
+                location.pathname === link.path ? 'text-primary border-b-2 border-primary pb-1' : 'text-gray-700'
+              }`}
+            >
+              {link.name}
+            </Link>
+          ))}
         </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden pb-4">
+        {/* Action Buttons */}
+        <div className="hidden md:flex items-center space-x-4">
+          <Link
+            to="/book-appointment"
+            className="bg-amber-200 hover:bg-amber-300 text-gray-800 px-4 py-2 rounded text-sm font-medium transition-colors"
+          >
+            BOOK APPOINTMENT
+          </Link>
+          <Link to="/cart" className="text-gray-700 hover:text-primary">
+            <ShoppingBag size={24} />
+          </Link>
+        </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          className="md:hidden text-gray-700"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+        >
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      {/* Mobile Navigation */}
+      {isMenuOpen && (
+        <div className="md:hidden bg-white absolute top-full left-0 right-0 border-t border-gray-200 shadow-lg">
+          <div className="container mx-auto px-4 py-4">
             <div className="flex flex-col space-y-4">
-              <Link to="/" className="hover:text-primary">Home</Link>
-              <Link to="/diamonds" className="hover:text-primary">Diamonds</Link>
-              <Link to="/rings" className="hover:text-primary">Wedding Rings</Link>
-              <Link to="/custom" className="hover:text-primary">Custom Jewelry</Link>
-              <div className="pt-4 border-t">
-                <div className="flex items-center space-x-2 py-2">
-                  <PhoneCall className="h-4 w-4" />
-                  <span>1 5551234567</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Mail className="h-4 w-4" />
-                  <span>ex@gmail.com</span>
-                </div>
-                {/* Appointment Button */}
-                <Button className="w-full mt-4">Book Appointment</Button>
-              </div>
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  className={`text-sm font-medium px-2 py-2 hover:bg-gray-100 rounded ${
+                    location.pathname === link.path ? 'text-primary' : 'text-gray-700'
+                  }`}
+                  onClick={closeMenu}
+                >
+                  {link.name}
+                </Link>
+              ))}
+              <Link
+                to="/book-appointment"
+                className="bg-amber-200 hover:bg-amber-300 text-gray-800 px-4 py-3 rounded text-sm font-medium text-center"
+                onClick={closeMenu}
+              >
+                BOOK APPOINTMENT
+              </Link>
+              <Link 
+                to="/cart" 
+                className="flex items-center space-x-2 px-2 py-2 hover:bg-gray-100 rounded"
+                onClick={closeMenu}
+              >
+                <ShoppingBag size={20} />
+                <span className="text-sm font-medium">CART</span>
+              </Link>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </nav>
   );
-}
+};
 
 export default Navbar;
