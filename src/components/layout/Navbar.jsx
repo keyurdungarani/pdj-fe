@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ShoppingBag } from 'lucide-react';
+import { PLACEHOLDER_IMAGES } from '../../utils/placeholderImage';
 // import Logo from '../../assets/logo.png'; // Make sure to add a logo file
 
 const Navbar = () => {
@@ -9,8 +10,8 @@ const Navbar = () => {
   const location = useLocation();
 
   const navLinks = [
-    { name: 'ENGAGEMENT', path: '/engagement' },
-    { name: 'WEDDING', path: '/wedding' },
+    // { name: 'ENGAGEMENT', path: '/engagement' },
+    // { name: 'WEDDING', path: '/wedding' },
     { name: 'DIAMONDS', path: '/diamonds' },
     { name: 'JEWELLERY', path: '/jewellery' },
     { name: 'ABOUT US', path: '/why-choose-us' },
@@ -49,7 +50,7 @@ const Navbar = () => {
             className="h-10 md:h-12"
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = 'https://via.placeholder.com/150x50?text=PDJ+Jewellery';
+              e.target.src = PLACEHOLDER_IMAGES.product;
             }}
           />
         </Link>

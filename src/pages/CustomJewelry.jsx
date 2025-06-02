@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Check, ChevronLeft, ChevronRight, Diamond, Ring, Sparkles, Calculator, Send } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Diamond, Gem, Star, Calculator, Send, ChevronDown, ChevronUp, Settings, Heart } from 'lucide-react';
 import ConfirmOrderModal from '../components/common/ConfirmOrderModal';
 import axios from 'axios';
+import { PLACEHOLDER_IMAGES } from '../utils/placeholderImage';
 
 const CustomJewelry = () => {
   const [step, setStep] = useState(1);
@@ -119,7 +120,7 @@ const CustomJewelry = () => {
                 className="w-full h-full object-contain"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = 'https://via.placeholder.com/200?text=Diamond';
+                  e.target.src = PLACEHOLDER_IMAGES.jewelry;
                 }}
               />
               {selectedDiamond?._id === diamond._id && (
@@ -185,7 +186,7 @@ const CustomJewelry = () => {
                 className="w-full h-full object-contain"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = 'https://via.placeholder.com/200?text=Ring';
+                  e.target.src = PLACEHOLDER_IMAGES.jewelry;
                 }}
               />
               {selectedRing?._id === ring._id && (
@@ -290,7 +291,7 @@ const CustomJewelry = () => {
         
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Ring size={20} className="text-primary" /> Ring Setting
+            <Gem size={20} className="text-primary" /> Ring Setting
           </h3>
           
           {selectedRing && (
@@ -503,7 +504,7 @@ const CustomJewelry = () => {
       <div className="flex justify-between items-center">
         {[
           { icon: <Diamond size={20} />, label: 'Choose Diamond' },
-          { icon: <Ring size={20} />, label: 'Choose Ring' },
+          { icon: <Gem size={20} />, label: 'Choose Ring' },
           { icon: <Calculator size={20} />, label: 'View Cost' },
           { icon: <Send size={20} />, label: 'Complete Order' },
         ].map((stepItem, index) => (

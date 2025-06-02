@@ -2,8 +2,17 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { X, Upload, Image as ImageIcon } from 'lucide-react';
+import ImagePreview from '../components/ImagePreview';
+import Input from "../components/ui/Input";
+import Button from "../components/ui/Button";
+import Table from "../components/ui/Table";
+import Modal from "../components/ui/Modal";
+import { adminAPI } from "../services/api";
+import './GalleryManager.css';
+import { PLACEHOLDER_IMAGES } from '../utils/placeholderImage';
 
-function ProductList() {
+function ProductList({ hideProductList = false }) {
   const [products, setProducts] = useState([]);
   const [formData, setFormData] = useState({
     type: "diamond",
@@ -21,6 +30,11 @@ function ProductList() {
   const [errors, setErrors] = useState({});
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  // Add state for gallery image management
+  const [galleryImagePreviews, setGalleryImagePreviews] = useState([]);
+  const [galleryImageErrors, setGalleryImageErrors] = useState([]);
+  const [galleryFormData, setGalleryFormData] = useState(new FormData());
 
   function getDefaultSpecs(type) {
     switch (type) {
@@ -40,7 +54,7 @@ function ProductList() {
   }, []);
 
   const fetchProducts = async () => {
-    try {
+try {
       const adminToken = localStorage.getItem('pdjAdminToken');
       
       if (!adminToken) {
@@ -54,8 +68,8 @@ function ProductList() {
           "Authorization": `Bearer ${adminToken}`
         }
       });
-      setProducts(response.data);
-    } catch (error) {
+    setProducts(response.data);
+} catch (error) {
       console.error("Error fetching products:", error);
       if (error.response?.status === 401) {
         navigate('/admin/login');
@@ -75,18 +89,153 @@ function ProductList() {
     const { name, value } = e.target;
     if (name === "type") {
       setFormData(prev => ({
-        ...prev,
+...prev,
         ...getDefaultSpecs(value),
         type: value,
-      }));
+              }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
+  // Add handler for individual gallery image changes
+  const handleGalleryImageChange = (file, index) => {
+    if (!file) return;
+
+    // Validate file
+    if (!validateGalleryImage(file, index)) return;
+
+    // Update galleryImages array
+    const updatedGalleryImages = [...formData.galleryImages];
+    
+    // Store reference to file for form submission
+    if (!updatedGalleryImages[index]) {
+      updatedGalleryImages[index] = file;
+    } else {
+      updatedGalleryImages[index] = file;
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      galleryImages: updatedGalleryImages
+    }));
+
+    // Update preview
+    updateGalleryPreview(file, index);
+  };
+
+  // Function to validate gallery images
+  const validateGalleryImage = (file, index) => {
+    // Check file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      setGalleryImageErrors(prev => {
+        const errors = [...prev];
+        errors[index] = 'Invalid file type. Please use JPEG, PNG, WEBP or GIF';
+        return errors;
+      });
+      return false;
+    }
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setGalleryImageErrors(prev => {
+        const errors = [...prev];
+        errors[index] = 'File too large (max 5MB)';
+        return errors;
+      });
+      return false;
+    }
+
+    // Clear error for this index
+    setGalleryImageErrors(prev => {
+      const errors = [...prev];
+      errors[index] = null;
+      return errors;
+    });
+
+    return true;
+  };
+
+  // Function to generate and update preview URLs
+  const updateGalleryPreview = (file, index) => {
+    const previewUrl = URL.createObjectURL(file);
+    
+    setGalleryImagePreviews(prev => {
+      const previews = [...prev];
+      // Clean up old preview URL
+      if (previews[index]) URL.revokeObjectURL(previews[index]);
+      previews[index] = previewUrl;
+      return previews;
+    });
+  };
+
+  // Function to remove a gallery image
+  const removeGalleryImage = (index) => {
+    // Update gallery images array
+    const updatedGalleryImages = [...formData.galleryImages];
+    updatedGalleryImages.splice(index, 1);
+    
+    setFormData(prev => ({
+      ...prev,
+      galleryImages: updatedGalleryImages
+    }));
+
+    // Clean up preview URL
+    setGalleryImagePreviews(prev => {
+      const previews = [...prev];
+      if (previews[index]) URL.revokeObjectURL(previews[index]);
+      previews.splice(index, 1);
+      return previews;
+    });
+
+    // Remove error entry
+    setGalleryImageErrors(prev => {
+      const errors = [...prev];
+      errors.splice(index, 1);
+      return errors;
+    });
+  };
+
+  // Function to add a new empty slot
+  const addGalleryImage = () => {
+    // Maximum 5 images
+    if (formData.galleryImages.length >= 5) return;
+    
+    // Add null as placeholder
+    setFormData(prev => ({
+      ...prev,
+      galleryImages: [...prev.galleryImages, null]
+    }));
+    
+    // Add empty preview and error slots
+    setGalleryImagePreviews(prev => [...prev, null]);
+    setGalleryImageErrors(prev => [...prev, null]);
+  };
+
+  // Update the existing handleFileChange function to support this new approach
   const handleFileChange = (e) => {
     const { name, files } = e.target;
+    if (files && files.length > 0) {
+      console.log(`File selected for ${name}:`, files[0].name, files[0].size);
+      
+      if (name === 'galleryImages') {
+        // For bulk upload, convert FileList to Array and store
+        const filesArray = Array.from(files);
+        
+        // Update formData with the new files
+        setFormData(prev => ({ ...prev, [name]: filesArray }));
+        
+        // Reset gallery image previews and errors since we're replacing all images
+        const previews = filesArray.map(file => URL.createObjectURL(file));
+        setGalleryImagePreviews(previews);
+        setGalleryImageErrors([]);
+      } else {
     setFormData(prev => ({ ...prev, [name]: files }));
+      }
+    } else {
+      console.log(`No files selected for ${name}`);
+    }
   };
 
   const validateForm = () => {
@@ -94,28 +243,6 @@ function ProductList() {
     if (!formData.name) newErrors.name = "Product Name is required";
     if (!formData.price) newErrors.price = "Price is required";
     if (!formData.mainImage) newErrors.mainImage = "Main Image is required";
-    if (formData.galleryImages.length !== 3) newErrors.galleryImages = "Exactly 3 gallery images are required";
-    if (!formData.video) newErrors.video = "Video is required";
-    
-    if (formData.type === "diamond") {
-      if (!formData.rotation360) newErrors.rotation360 = "Rotation 360 image is required";
-      if (formData.zoomImages.length < 1) newErrors.zoomImages = "At least one zoom image is required";
-      Object.entries(formData.specifications).forEach(([key, value]) => {
-        if (!value) newErrors[key] = `${key.charAt(0).toUpperCase() + key.slice(1)} is required`;
-      });
-    }
-
-    if (formData.type === "ring") {
-      if (!formData.specifications.material) newErrors.material = "Material is required";
-      if (!formData.specifications.size) newErrors.size = "Size is required";
-    }
-
-    if (formData.type === "jewelry") {
-      if (!formData.category) newErrors.category = "Category is required";
-      if (!formData.specifications.material) newErrors.material = "Material is required";
-      if (!formData.specifications.diamondType) newErrors.diamondType = "Diamond type is required";
-      if (!formData.specifications.caratWeight) newErrors.caratWeight = "Carat weight is required";
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -125,6 +252,7 @@ function ProductList() {
     e.preventDefault();
     if (!validateForm()) return;
 
+    try {
     const form = new FormData();
     const endpoint = `${import.meta.env.VITE_LOCAL_API}/products/${
       formData.type === "diamond" ? "addDiamonds" :
@@ -136,31 +264,62 @@ function ProductList() {
     form.append("name", formData.name);
     form.append("description", formData.description);
     form.append("price", formData.price);
-    form.append("mainImage", formData.mainImage[0]);
-    
-    Array.from(formData.galleryImages).forEach(file => {
-      form.append("galleryImages", file);
-    });
-    
-    form.append("video", formData.video[0]);
-    
-    // Convert specific specifications based on type
-    if (formData.type === "diamond") {
-      form.append("specifications", JSON.stringify(formData.specifications));
-      form.append("rotation360", formData.rotation360[0]);
-      Array.from(formData.zoomImages).forEach(file => {
-        form.append("zoomImages", file);
-      });
-    }
-    else if (formData.type === "ring") {
-      form.append("specifications", JSON.stringify(formData.specifications));
-    }
-    else if (formData.type === "jewelry") {
-      form.append("specifications", JSON.stringify(formData.specifications));
-      form.append("category", formData.category);
-    }
 
-    try {
+      // Check files before appending
+      if (!formData.mainImage || !formData.mainImage[0]) {
+        setErrors(prev => ({...prev, mainImage: "Main image is required"}));
+        return;
+      }
+      
+      const mainImageFile = formData.mainImage[0];
+      if (mainImageFile.size === 0) {
+        setErrors(prev => ({...prev, mainImage: "Main image file is empty"}));
+        return;
+      }
+      
+      form.append("mainImage", mainImageFile);
+      
+      // Gallery images (optional)
+      if (formData.galleryImages && formData.galleryImages.length > 0) {
+        Array.from(formData.galleryImages).forEach((file, index) => {
+          if (file && file.size > 0) {
+      form.append("galleryImages", file);
+          }
+    });
+      }
+    
+      // Video (optional)
+      if (formData.video && formData.video[0] && formData.video[0].size > 0) {
+    form.append("video", formData.video[0]);
+      }
+      
+      // Add specific fields based on product type
+      if (formData.type === "diamond") {
+        // Diamond specific fields (optional)
+    form.append("specifications", JSON.stringify(formData.specifications));
+
+        if (formData.rotation360 && formData.rotation360[0] && formData.rotation360[0].size > 0) {
+      form.append("rotation360", formData.rotation360[0]);
+        }
+        
+        if (formData.zoomImages && formData.zoomImages.length > 0) {
+          Array.from(formData.zoomImages).forEach((file, index) => {
+            if (file && file.size > 0) {
+        form.append("zoomImages", file);
+            }
+          });
+        }
+      }
+      else if (formData.type === "ring") {
+        form.append("specifications", JSON.stringify(formData.specifications));
+      }
+      else if (formData.type === "jewelry") {
+        form.append("specifications", JSON.stringify(formData.specifications));
+        if (formData.category) {
+      form.append("category", formData.category);
+        }
+      }
+
       // Get admin token from localStorage
       const adminToken = localStorage.getItem('pdjAdminToken');
       
@@ -172,7 +331,7 @@ function ProductList() {
       }
       
       // Send request with admin token in Authorization header
-      await axios.post(endpoint, form, {
+      const response = await axios.post(endpoint, form, {
         headers: { 
           "Content-Type": "multipart/form-data",
           "Authorization": `Bearer ${adminToken}`
@@ -294,17 +453,21 @@ function ProductList() {
   };
 
   return (
-    <div className="p-6 bg-[#F9F9F9] min-h-screen font-sans">
-      <h1 className="text-4xl font-serif text-[#D4AF37] text-center mb-8">
-        Admin Panel
-      </h1>
+    <div className={hideProductList ? "" : "p-6 bg-[#F9F9F9] min-h-screen font-sans"}>
+      {!hideProductList && (
+        <h1 className="text-4xl font-serif text-[#D4AF37] text-center mb-8">
+          Admin Panel
+        </h1>
+      )}
 
       {/* Form Section */}
-      <div className="bg-white rounded-lg shadow-lg p-8 mb-12 max-w-4xl mx-auto border border-[#D4AF37]">
+      <div className={hideProductList ? "" : "bg-white rounded-lg shadow-lg p-8 mb-12 max-w-4xl mx-auto border border-[#D4AF37]"}>
         <form onSubmit={handleSubmit}>
-          <h2 className="text-2xl font-semibold text-[#333] mb-6">
-            Add a New Product
-          </h2>
+          {!hideProductList && (
+            <h2 className="text-2xl font-semibold text-[#333] mb-6">
+              Add a New Product
+            </h2>
+          )}
 
           {error && (
             <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
@@ -393,24 +556,124 @@ function ProductList() {
 
           <div className="mb-6">
             <label className="block text-lg font-medium mb-1 text-[#555]">
-              Upload 3 Images for Gallery <span className="text-red-500">*</span>
+              Gallery Images
             </label>
             <label className="block text-sm font-medium mb-2 text-[#555]">
-              (Upload 3 images for gallery view)
+              (Upload up to 5 images for gallery view)
+            </label>
+            
+            {/* Gallery Image Manager */}
+            <div className="w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                {/* Existing Images */}
+                {formData.galleryImages.map((image, index) => (
+                  <div 
+                    key={index} 
+                    className="relative border border-gray-300 rounded-lg p-2 h-48 flex items-center justify-center bg-white overflow-hidden"
+                  >
+                    {/* Image Preview */}
+                    {(image || galleryImagePreviews[index]) && (
+                      <ImagePreview
+                        src={galleryImagePreviews[index] || (typeof image === 'string' ? image : URL.createObjectURL(image))}
+                        alt={`Gallery image ${index + 1}`} 
+                        thumbnailHeight="100%"
+                        placeholderImage={PLACEHOLDER_IMAGES.thumbnail}
+                        className="w-full h-full"
+                      />
+                    )}
+
+                    {!image && !galleryImagePreviews[index] && (
+                      <div className="flex flex-col items-center justify-center text-gray-400">
+                        <ImageIcon size={32} />
+                        <span className="mt-2 text-sm">No image</span>
+                      </div>
+                    )}
+
+                    {/* Error message */}
+                    {galleryImageErrors[index] && (
+                      <div className="absolute inset-0 bg-red-100 bg-opacity-90 flex items-center justify-center p-4">
+                        <p className="text-red-600 text-sm text-center">{galleryImageErrors[index]}</p>
+                      </div>
+                    )}
+
+                    {/* Control buttons */}
+                    <div className="absolute top-2 right-2 flex space-x-1">
+                      {/* Replace button */}
+                      <label 
+                        className="w-8 h-8 bg-blue-500 hover:bg-blue-600 rounded-full flex items-center justify-center cursor-pointer"
+                        title="Replace image"
+                      >
+                        <Upload size={16} className="text-white" />
+                        <input 
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => e.target.files[0] && handleGalleryImageChange(e.target.files[0], index)}
+                        />
+                      </label>
+
+                      {/* Remove button */}
+                      <button
+                        type="button"
+                        onClick={() => removeGalleryImage(index)}
+                        className="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center"
+                        title="Remove image"
+                      >
+                        <X size={16} className="text-white" />
+                      </button>
+                    </div>
+                    
+                    {/* Image number indicator */}
+                    <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                      {index + 1}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Add new image button */}
+                {formData.galleryImages.length < 5 && (
+                  <div 
+                    className="border-2 border-dashed border-gray-300 rounded-lg p-4 h-48 flex flex-col items-center justify-center cursor-pointer hover:border-[#D4AF37] hover:bg-yellow-50 transition-colors"
+                    onClick={addGalleryImage}
+                  >
+                    <Upload size={24} className="text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-500">Add image</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="text-sm text-gray-500 mt-2">
+                {formData.galleryImages.length} of 5 images
+                {galleryImageErrors.some(error => error) && (
+                  <p className="text-red-500 mt-1">Please fix the errors before saving</p>
+                )}
+              </div>
+              
+              {/* Bulk upload option */}
+              <div className="mt-4 border-t pt-4">
+                <label className="block text-sm font-medium mb-2 text-[#555]">
+                  Or replace all images at once:
             </label>
             <input
               type="file"
               name="galleryImages"
               multiple
               onChange={handleFileChange}
-              className={`w-full p-2 border cursor-pointer ${errors.galleryImages ? 'border-red-500' : 'border-[#D4AF37]'} rounded-md focus:outline-none focus:ring focus:ring-[#D4AF37]`}
-            />
-            {errors.galleryImages && <p className="text-red-500 text-sm">{errors.galleryImages}</p>}
+                  className="w-full p-2 border cursor-pointer border-[#D4AF37] rounded-md focus:outline-none focus:ring focus:ring-[#D4AF37]"
+                  accept="image/*"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Select multiple files to replace all gallery images
+                </p>
+              </div>
+            </div>
+            
+            {errors.galleryImages && <p className="text-red-500 text-sm mt-2">{errors.galleryImages}</p>}
           </div>
 
           <div className="mb-6">
             <label className="block text-lg font-medium mb-2 text-[#555]">
-              Upload Video <span className="text-red-500">*</span>
+              Upload Video
             </label>
             <input
               type="file"
@@ -424,7 +687,7 @@ function ProductList() {
           {formData.type === "jewelry" && (
             <div className="mb-6">
               <label className="block text-lg font-medium mb-2 text-[#555]">
-                Category <span className="text-red-500">*</span>
+                Category
               </label>
               <select
                 name="category"
@@ -445,7 +708,7 @@ function ProductList() {
             <>
               <div className="mb-6">
                 <label className="block text-lg font-medium mb-2 text-[#555]">
-                  Rotation 360 Image <span className="text-red-500">*</span>
+                  Rotation 360 Image
                 </label>
                 <input
                   type="file"
@@ -458,7 +721,7 @@ function ProductList() {
 
               <div className="mb-6">
                 <label className="block text-lg font-medium mb-2 text-[#555]">
-                  Zoom Images <span className="text-red-500">*</span>
+                  Zoom Images
                 </label>
                 <input
                   type="file"
@@ -490,33 +753,35 @@ function ProductList() {
       </div>
 
       {/* Product List Section */}
-      <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl mx-auto border border-[#D4AF37]">
-        <h2 className="text-2xl font-semibold text-[#333] mb-6">
-          Product List
-        </h2>
-        <table className="min-w-full bg-white">
-          <thead>
-            <tr>
-              <th className="py-2 px-4 border-b border-[#D4AF37]">Name</th>
-              <th className="py-2 px-4 border-b border-[#D4AF37]">Type</th>
-              <th className="py-2 px-4 border-b border-[#D4AF37]">Price</th>
-              <th className="py-2 px-4 border-b border-[#D4AF37]">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            { products.length > 0 && products.map((product) => (
-              <tr key={product.id}>
-                <td className="py-2 px-4 border-b border-[#D4AF37]">{product.name}</td>
-                <td className="py-2 px-4 border-b border-[#D4AF37]">{product.type}</td>
-                <td className="py-2 px-4 border-b border-[#D4AF37]">{product.price}</td>
-                <td className="py-2 px-4 border-b border-[#D4AF37]">
-                  <button className="text-red-500 hover:underline">Delete</button>
-                </td>
+      {!hideProductList && (
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl mx-auto border border-[#D4AF37]">
+          <h2 className="text-2xl font-semibold text-[#333] mb-6">
+            Product List
+          </h2>
+          <table className="min-w-full bg-white">
+            <thead>
+              <tr>
+                <th className="py-2 px-4 border-b border-[#D4AF37]">Name</th>
+                <th className="py-2 px-4 border-b border-[#D4AF37]">Type</th>
+                <th className="py-2 px-4 border-b border-[#D4AF37]">Price</th>
+                <th className="py-2 px-4 border-b border-[#D4AF37]">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              { products.length > 0 && products.map((product) => (
+                <tr key={product.id}>
+                  <td className="py-2 px-4 border-b border-[#D4AF37]">{product.name}</td>
+                  <td className="py-2 px-4 border-b border-[#D4AF37]">{product.type}</td>
+                  <td className="py-2 px-4 border-b border-[#D4AF37]">{product.price}</td>
+                  <td className="py-2 px-4 border-b border-[#D4AF37]">
+                    <button className="text-red-500 hover:underline">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

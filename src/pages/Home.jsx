@@ -73,7 +73,7 @@ const Home = () => {
     const fetchFeaturedProducts = async () => {
       try {
         // Update to use the correct API endpoints
-        const response = await axios.get('/api/products?featured=true');
+        const response = await axios.get('/products?featured=true');
         
         // Filter products by category
         if (response.data && response.data.products) {

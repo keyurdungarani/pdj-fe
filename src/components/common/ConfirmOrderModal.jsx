@@ -1,22 +1,32 @@
 import React, { useState } from 'react';
 import { X, ShoppingBag } from 'lucide-react';
+import { PLACEHOLDER_IMAGES } from '../../utils/placeholderImage';
 
-const ConfirmOrderModal = ({ isOpen, onClose, productDetails }) => {
+const ConfirmOrderModal = ({ 
+  isOpen, 
+  onClose, 
+  productName: name, 
+  productPrice: price, 
+  productImage: image, 
+  productId 
+}) => {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
 
-  const { name, price, image } = productDetails || {};
-
-  const handleConfirmOrder = () => {
+  const handleConfirmOrder = async () => {
     setLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setOrderPlaced(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      alert('Thank you for your interest! Our team will contact you soon.');
+      onClose();
+    } catch (error) {
+      console.error('Error confirming order:', error);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -57,7 +67,7 @@ const ConfirmOrderModal = ({ isOpen, onClose, productDetails }) => {
             <>
               <div className="flex gap-4 mb-4">
                 <img 
-                  src={image || 'https://via.placeholder.com/80'} 
+                  src={image || PLACEHOLDER_IMAGES.product} 
                   alt={name} 
                   className="w-20 h-20 object-cover rounded-md"
                 />

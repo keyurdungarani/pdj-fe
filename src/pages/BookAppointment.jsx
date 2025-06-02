@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Calendar, Clock, Check, AlertCircle } from 'lucide-react';
 import axios from 'axios';
+import { appointmentAPI } from '../services/api';
 
 const BookAppointment = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -9,10 +10,10 @@ const BookAppointment = () => {
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
   const consultationOptions = [
-    { value: 'diamond', label: 'Diamond Selection' },
-    { value: 'engagement', label: 'Engagement Ring' },
-    { value: 'wedding', label: 'Wedding Ring' },
-    { value: 'custom', label: 'Custom Jewelry' }
+    { value: 'Diamond', label: 'Diamond Selection' },
+    { value: 'Engagement Ring', label: 'Engagement Ring' },
+    { value: 'Wedding Ring', label: 'Wedding Ring' },
+    { value: 'Customize Jewelry', label: 'Custom Jewelry' }
   ];
 
   const onSubmit = async (data) => {
@@ -20,14 +21,25 @@ const BookAppointment = () => {
     setSubmitStatus({ success: false, message: '' });
 
     try {
-      // Format the data if needed
+      // Format the data as required by the backend
       const formattedData = {
         ...data,
+        // Rename consultationType to assistanceType as expected by backend
+        assistanceType: data.consultationType,
+        // Convert budget from range format to number (taking the lower bound)
+        budget: data.budget ? parseInt(data.budget.split('-')[0]) : undefined,
+        // Map time selection to the format expected by backend
+        consultationTime: data.consultationTime === "weekend" 
+          ? "Sat: 10.30am - 5.30pm" 
+          : "Mon-Fri: 10.30am - 6.30pm",
         createdAt: new Date()
       };
 
+      // Remove the original consultationType field to avoid duplication
+      delete formattedData.consultationType;
+
       // Send the appointment data to your backend API
-      const response = await axios.post('/api/appointments', formattedData);
+      const response = await appointmentAPI.create(formattedData);
 
       setSubmitStatus({
         success: true,
@@ -37,9 +49,10 @@ const BookAppointment = () => {
       // Reset the form on success
       reset();
     } catch (error) {
+      console.error('Appointment submission error:', error);
       setSubmitStatus({
         success: false,
-        message: error.response?.data?.message || 'Something went wrong. Please try again.'
+        message: error.response?.data?.msg || error.response?.data?.message || 'Something went wrong. Please try again.'
       });
     } finally {
       setIsSubmitting(false);
@@ -233,13 +246,8 @@ const BookAppointment = () => {
                       }`}
                     >
                       <option value="">Select a time</option>
-                      <option value="10:30">10:30 AM</option>
-                      <option value="11:30">11:30 AM</option>
-                      <option value="12:30">12:30 PM</option>
-                      <option value="14:30">2:30 PM</option>
-                      <option value="15:30">3:30 PM</option>
-                      <option value="16:30">4:30 PM</option>
-                      <option value="17:30">5:30 PM</option>
+                      <option value="weekday">Weekday (Mon-Fri: 10.30am - 6.30pm)</option>
+                      <option value="weekend">Weekend (Sat: 10.30am - 5.30pm)</option>
                     </select>
                   </div>
                   {errors.consultationTime && (
@@ -282,11 +290,11 @@ const BookAppointment = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
                   <option value="">Select a budget range</option>
-                  <option value="0-25000">₹0 - ₹25,000</option>
-                  <option value="25000-50000">₹25,000 - ₹50,000</option>
-                  <option value="50000-100000">₹50,000 - ₹1,00,000</option>
-                  <option value="100000-200000">₹1,00,000 - ₹2,00,000</option>
-                  <option value="200000+">Above ₹2,00,000</option>
+                  <option value="0">Under ₹25,000</option>
+                  <option value="25000">₹25,000 - ₹50,000</option>
+                  <option value="50000">₹50,000 - ₹1,00,000</option>
+                  <option value="100000">₹1,00,000 - ₹2,00,000</option>
+                  <option value="200000">Above ₹2,00,000</option>
                 </select>
                 <p className="mt-1 text-xs text-gray-500">We'll work with you to find the best options for your budget</p>
               </div>

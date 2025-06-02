@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Create API instance
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/';
 
 // Create axios instance with default config
 const api = axios.create({
@@ -58,9 +58,12 @@ api.interceptors.response.use(
 
 // API methods for products
 export const productAPI = {
-  getAll: () => api.get('/products'),
+  getAll: (query = '') => api.get(`/products${query}`),
   getById: (id) => api.get(`/products/${id}`),
   addDiamond: (data) => api.post('/products/addDiamonds', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  addLabGrown: (data) => api.post('/products/addLabGrown', data, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   addJewelry: (data) => api.post('/products/addJewelry', data, {
@@ -71,6 +74,10 @@ export const productAPI = {
   }),
   update: (id, data) => api.put(`/products/${id}`, data),
   delete: (id) => api.delete(`/products/${id}`),
+  getLabGrown: () => api.get('/products/type/lab-grown'),
+  getDiamonds: () => api.get('/products/type/diamonds'),
+  getRings: () => api.get('/products/type/rings'),
+  getJewelry: () => api.get('/products/type/jewelry'),
 };
 
 // API methods for authentication
@@ -93,10 +100,31 @@ export const orderAPI = {
 
 // API methods for appointments
 export const appointmentAPI = {
-  getAll: () => api.get('/appointments'),
+  getAll: (query = '') => api.get(`/appointments${query}`),
   getById: (id) => api.get(`/appointments/${id}`),
   create: (data) => api.post('/appointments', data),
   update: (id, data) => api.put(`/appointments/${id}`, data),
+  delete: (id) => api.delete(`/appointments/${id}`),
+  getStats: () => api.get('/appointments/stats'),
+};
+
+// API methods for admin
+export const adminAPI = {
+  login: (data) => api.post('/admin/login', data),
+  register: (data) => api.post('/admin/register', data),
+  getProfile: () => api.get('/admin/profile'),
+  updateProfile: (data) => api.put('/admin/profile', data),
+  getProductPanel: (type = 'jewelry', limit = 10) => 
+    api.get(`/admin/product-panel?type=${type}&limit=${limit}`),
+  searchProducts: (query, type = 'all') => 
+    api.get(`/admin/product-panel/search?query=${query}&type=${type}`),
+  updateProduct: (id, data) => api.put(`/admin/product-panel/product/${id}`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  deleteProduct: (id) => api.delete(`/admin/product-panel/product/${id}`),
+  deleteMultipleProducts: (ids) => api.post('/admin/product-panel/products/delete-multiple', { ids }),
+  getDashboardStats: () => api.get('/admin/dashboard/stats'),
+  getProductStats: () => api.get('/admin/products/stats'),
 };
 
 export default {
@@ -104,4 +132,5 @@ export default {
   authAPI,
   orderAPI,
   appointmentAPI,
+  adminAPI
 };
