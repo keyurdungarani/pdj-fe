@@ -135,7 +135,7 @@ const CustomJewelry = () => {
               <span className="text-gray-600 text-sm">
                 {diamond.carat}ct {diamond.cut} 
               </span>
-              <span className="font-bold">₹{diamond.price?.toLocaleString()}</span>
+              <span className="font-bold">${diamond.price?.toLocaleString('en-US')}</span>
             </div>
           </div>
         ))}
@@ -201,7 +201,7 @@ const CustomJewelry = () => {
               <span className="text-gray-600 text-sm">
                 {ring.metal} {ring.setting} 
               </span>
-              <span className="font-bold">₹{ring.price?.toLocaleString()}</span>
+              <span className="font-bold">${ring.price?.toLocaleString('en-US')}</span>
             </div>
           </div>
         ))}
@@ -282,7 +282,7 @@ const CustomJewelry = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Price:</span>
-                  <span className="font-bold">₹{selectedDiamond.price?.toLocaleString()}</span>
+                  <span className="font-bold">${selectedDiamond.price?.toLocaleString('en-US')}</span>
                 </div>
               </div>
             </div>
@@ -321,7 +321,7 @@ const CustomJewelry = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Price:</span>
-                  <span className="font-bold">₹{selectedRing.price?.toLocaleString()}</span>
+                  <span className="font-bold">${selectedRing.price?.toLocaleString('en-US')}</span>
                 </div>
               </div>
             </div>
@@ -334,7 +334,10 @@ const CustomJewelry = () => {
           <h3 className="text-xl font-bold flex items-center gap-2">
             <Calculator size={20} /> Total Cost
           </h3>
-          <span className="text-2xl font-bold">₹{totalCost.toLocaleString()}</span>
+          <div className="text-center">
+            <span className="text-2xl font-bold">${totalCost.toLocaleString('en-US')}</span>
+            <p className="text-gray-600 mt-1">Total Cost</p>
+          </div>
         </div>
         
         <div className="mt-4 text-sm text-gray-600">

@@ -66,6 +66,9 @@ export const productAPI = {
   addLabGrown: (data) => api.post('/products/addLabGrown', data, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
+  addNaturalDiamond: (data) => api.post('/products/addNaturalDiamond', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
   addJewelry: (data) => api.post('/products/addJewelry', data, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
@@ -76,8 +79,13 @@ export const productAPI = {
   delete: (id) => api.delete(`/products/${id}`),
   getLabGrown: () => api.get('/products/type/lab-grown'),
   getDiamonds: () => api.get('/products/type/diamonds'),
+  getNaturalDiamonds: () => api.get('/products/type/natural-diamonds'),
   getRings: () => api.get('/products/type/rings'),
   getJewelry: () => api.get('/products/type/jewelry'),
+  bulkUpload: (data, config) => api.post('/products/bulk-upload', data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    ...config
+  }),
 };
 
 // API methods for authentication
@@ -92,10 +100,12 @@ export const authAPI = {
 
 // API methods for orders
 export const orderAPI = {
-  getAll: () => api.get('/orders'),
-  getById: (id) => api.get(`/orders/${id}`),
   create: (data) => api.post('/orders', data),
-  update: (id, data) => api.put(`/orders/${id}`, data),
+  getAll: (query = '') => api.get(`/orders/admin/orders${query}`),
+  getById: (id) => api.get(`/orders/admin/orders/${id}`),
+  update: (id, data) => api.put(`/orders/admin/orders/${id}`, data),
+  delete: (id) => api.delete(`/orders/admin/orders/${id}`),
+  getStats: () => api.get('/orders/admin/orders/stats'),
 };
 
 // API methods for appointments
@@ -106,6 +116,16 @@ export const appointmentAPI = {
   update: (id, data) => api.put(`/appointments/${id}`, data),
   delete: (id) => api.delete(`/appointments/${id}`),
   getStats: () => api.get('/appointments/stats'),
+};
+
+// API methods for contact
+export const contactAPI = {
+  create: (data) => api.post('/contact', data),
+  getAll: (query = '') => api.get(`/contact/admin${query}`),
+  getById: (id) => api.get(`/contact/admin/${id}`),
+  update: (id, data) => api.put(`/contact/admin/${id}`, data),
+  delete: (id) => api.delete(`/contact/admin/${id}`),
+  getStats: () => api.get('/contact/admin/stats'),
 };
 
 // API methods for admin
@@ -132,5 +152,6 @@ export default {
   authAPI,
   orderAPI,
   appointmentAPI,
+  contactAPI,
   adminAPI
 };

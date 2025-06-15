@@ -9,7 +9,8 @@ import {
   Plus,
   Eye,
   Edit,
-  BarChart3
+  BarChart3,
+  User
 } from 'lucide-react';
 import { adminAPI, appointmentAPI } from '../../services/api';
 
@@ -262,7 +263,7 @@ const AdminDashboard = () => {
                     </div>
                     <div className="flex-1">
                       <p className="font-medium text-gray-900">{product.name}</p>
-                      <p className="text-sm text-gray-600">₹{product.price?.toLocaleString()}</p>
+                      <p className="text-sm text-gray-600">${product.price?.toLocaleString('en-US')}</p>
                     </div>
                     <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
                       {product.type}
@@ -293,23 +294,39 @@ const AdminDashboard = () => {
             {stats.recentAppointments.length > 0 ? (
               <div className="space-y-4">
                 {stats.recentAppointments.map((appointment) => (
-                  <div key={appointment._id} className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                      <Calendar size={20} className="text-gray-500" />
+                  <div key={appointment._id} className="flex items-center justify-between p-4 border-b border-gray-200 last:border-b-0">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <User size={16} className="text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {appointment.fullName}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {appointment.assistanceType}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">
-                        {appointment.firstName} {appointment.lastName}
+                    <div className="text-right">
+                      <p className="text-sm text-gray-900">
+                        {new Date(appointment.consultationDateTime).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true
+                        })}
                       </p>
-                      <p className="text-sm text-gray-600">{appointment.consultationDate}</p>
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {appointment.status}
+                      </span>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                      appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {appointment.status}
-                    </span>
                   </div>
                 ))}
               </div>

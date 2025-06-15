@@ -39,8 +39,8 @@ const ProductCard = ({ product, type = 'jewelry' }) => {
     : PLACEHOLDER_IMAGES.product;
 
   // Format the price with commas
-  const formattedPrice = price?.toLocaleString('en-IN') || '';
-  const formattedOriginalPrice = originalPrice?.toLocaleString('en-IN') || '';
+  const formattedPrice = price?.toLocaleString('en-US') || '';
+  const formattedOriginalPrice = originalPrice?.toLocaleString('en-US') || '';
   
   // Handle image sliding on hover
   useEffect(() => {
@@ -162,11 +162,11 @@ const ProductCard = ({ product, type = 'jewelry' }) => {
           
           {/* Price */}
           <div className="flex items-center mt-1">
-            <span className="font-semibold text-base">₹{formattedPrice}</span>
+            <span className="font-semibold text-base">${formattedPrice}</span>
             
             {/* Original price with strikethrough */}
             {originalPrice && originalPrice > price && (
-              <span className="ml-2 text-xs text-gray-500 line-through">₹{formattedOriginalPrice}</span>
+              <span className="ml-2 text-xs text-gray-500 line-through">${formattedOriginalPrice}</span>
             )}
             
             {/* Discount percentage */}
@@ -181,12 +181,13 @@ const ProductCard = ({ product, type = 'jewelry' }) => {
       <ConfirmOrderModal
         isOpen={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}
-        productDetails={{
-          name,
-          price,
-          image: images?.[0],
-          details
-        }}
+        productName={name}
+        productPrice={price}
+        productImage={images?.[0]}
+        productId={_id}
+        productType={productType || type}
+        stockNumber={product?.stockNumber || product?.jewelrySpecs?.stockNumber}
+        product={product}
       />
     </>
   );

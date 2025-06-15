@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   ChevronLeft, 
   ChevronRight, 
-  ZoomIn, 
   RotateCw, 
   Heart, 
   ShoppingCart, 
@@ -17,20 +16,16 @@ import {
   CheckCircle,
   Info,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  ShoppingBag
 } from 'lucide-react';
 import ConfirmOrderModal from '../common/ConfirmOrderModal';
 import { PLACEHOLDER_IMAGES } from '../../utils/placeholderImage';
 
 const DiamondDetail = ({ product, type = 'diamonds' }) => {
   const [selectedImage, setSelectedImage] = useState(0);
-  const [showZoom, setShowZoom] = useState(false);
   const [showFullscreen, setShowFullscreen] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [is360Active, setIs360Active] = useState(false);
-  const [currentRotation, setCurrentRotation] = useState(0);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(2);
   const [imageError, setImageError] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     specifications: true,
@@ -38,9 +33,7 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
     quality: false,
     ethical: false
   });
-  
-  const imageContainerRef = useRef(null);
-  const fullscreenImageRef = useRef(null);
+
   
   if (!product) return <div className="p-8 text-center">Diamond not found</div>;
   
@@ -64,24 +57,103 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
     featured
   } = product;
   
-  // Get the appropriate specs based on diamond type
-  const specs = productType === 'lab-grown' ? labGrownSpecs : diamondSpecs;
+  // Get the appropriate specs based on diamond type - VDB compliant
+  const specs = productType === 'lab-grown' ? labGrownSpecs : 
+                productType === 'natural-diamond' ? product.naturalDiamondSpecs || diamondSpecs :
+                diamondSpecs;
   
-  // Extract key diamond characteristics
+  // Extract VDB-compliant diamond characteristics
   const {
-    carat = specs.weight,
-    cut = specs.cutGrade,
-    color,
-    clarity,
-    shape,
-    certification = specs.lab,
-    polish,
-    symmetry,
-    fluorescence = specs.fluorescenceIntensity,
-    table,
-    depth,
-    ratio
+    // VDB Core Fields
+    stockNumber = specs.stockNumber,
+    shape = specs.shape,
+    weight = specs.weight, // Carat weight
+    color = specs.color,
+    clarity = specs.clarity,
+    cutGrade = specs.cutGrade,
+    polish = specs.polish,
+    symmetry = specs.symmetry,
+    fluorescenceIntensity = specs.fluorescenceIntensity,
+    fluorescenceColor = specs.fluorescenceColor,
+    lab = specs.lab, // Certification lab
+    certificateNumber = specs.certificateNumber,
+    certificateUrl = specs.certificateUrl, // Direct certificate URL
+    availability = specs.availability,
+    
+    // Additional VDB Fields
+    depthPercent = specs.depthPercent,
+    tablePercent = specs.tablePercent,
+    measurements = specs.measurements,
+    pricePerCarat = specs.pricePerCarat,
+    totalPrice = specs.totalPrice,
+    fancyColor = specs.fancyColor,
+    fancyColorIntensity = specs.fancyColorIntensity,
+    fancyColorOvertone = specs.fancyColorOvertone,
+    culetSize = specs.culetSize,
+    girdleThick = specs.girdleThick,
+    girdleThin = specs.girdleThin,
+    crownAngle = specs.crownAngle,
+    crownHeight = specs.crownHeight,
+    pavilionAngle = specs.pavilionAngle,
+    pavilionDepth = specs.pavilionDepth,
+    starLength = specs.starLength,
+    lowerHalf = specs.lowerHalf,
+    girdlePercent = specs.girdlePercent,
+    
+    // Lab-grown specific
+    growthType = specs.growthType, // CVD, HPHT
+    
+    // Location
+    location = specs.location || {},
+    
+    // Legacy fields for backward compatibility
+    carat: legacyCarat = details.carat,
+    cut: legacyCut = details.cut,
+    certification: legacyCertification = details.certification,
+    fluorescence: legacyFluorescence = details.fluorescence,
+    table: legacyTable = details.table,
+    depth: legacyDepth = details.depth,
+    ratio = details.ratio
   } = { ...details, ...specs };
+  
+  // Use new or legacy values
+  const displayCarat = weight || legacyCarat;
+  const displayCut = cutGrade || legacyCut;
+  const displayCertification = lab || legacyCertification;
+  const displayFluorescence = fluorescenceIntensity || legacyFluorescence;
+  const displayTable = tablePercent || legacyTable;
+  const displayDepth = depthPercent || legacyDepth;
+  
+  // Certificate verification URL helper - prioritizes certificateUrl if available
+  const getCertificateUrl = (certUrl, certNumber, labName) => {
+    // Priority 1: Use direct certificate URL if available
+    if (certUrl && certUrl.trim()) {
+      return certUrl;
+    }
+    
+    // Priority 2: Construct URL using certificate number and lab
+    if (!certNumber) return '';
+    
+    const labUpper = labName?.toUpperCase() || '';
+    
+    switch (labUpper) {
+      case 'GIA':
+        return `https://www.gia.edu/report-check?reportno=${certNumber}`;
+      case 'IGI':
+        return `https://www.igi.org/verify-your-report/?r=${certNumber}`;
+      case 'AGS':
+        return `https://www.americangemsociety.org/diamond-grading-services/light-performance/ideal-cut-diamonds/`;
+      case 'GCAL':
+        return `https://www.gcal.com/certificate-search/?certificate_id=${certNumber}`;
+      case 'EGL':
+        return `https://www.eglusa.com/verify-report/?report=${certNumber}`;
+      case 'GSI':
+        return `https://www.gemsciences.com/certificate-verification/?cert=${certNumber}`;
+      default:
+        // Default to IGI for unknown labs
+        return `https://www.igi.org/verify-your-report/?r=${certNumber}`;
+    }
+  };
   
   const formattedPrice = price?.toLocaleString('en-US') || '';
   const formattedOriginalPrice = originalPrice?.toLocaleString('en-US') || '';
@@ -100,7 +172,7 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
   const allImages = processedMainImage ? [processedMainImage, ...processedGalleryImages] : processedGalleryImages;
   const currentImageUrl = allImages.length > 0 ? allImages[selectedImage] : PLACEHOLDER_IMAGES.diamond;
   
-  // Grade color coding
+  // Grade color coding for diamond characteristics
   const getGradeColor = (grade, type) => {
     if (!grade) return 'text-gray-500';
     
@@ -122,6 +194,12 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
       return ['FL', 'IF'].includes(gradeUpper) ? 'text-green-600' :
              gradeUpper.includes('VVS') ? 'text-blue-600' :
              gradeUpper.includes('VS') ? 'text-yellow-600' : 'text-orange-600';
+    }
+    
+    if (type === 'fluorescence') {
+      return gradeUpper === 'NONE' ? 'text-green-600' :
+             gradeUpper === 'FAINT' ? 'text-blue-600' :
+             ['MEDIUM', 'STRONG'].includes(gradeUpper) ? 'text-yellow-600' : 'text-orange-600';
     }
     
     return 'text-gray-600';
@@ -151,34 +229,85 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
     return '';
   };
   
-  // Get availability status dynamically
+  // Get availability status dynamically with fallback to VDB specs
   const getAvailabilityStatus = () => {
-    if (countInStock === undefined || countInStock === null) {
-      return { text: 'Availability Unknown', color: 'text-gray-600', icon: null };
+    // First check if countInStock is properly set
+    if (countInStock !== undefined && countInStock !== null) {
+      if (countInStock > 5) {
+        return { 
+          text: `In Stock (${countInStock} available)`, 
+          color: 'text-green-600', 
+          icon: <CheckCircle size={16} className="mr-1" /> 
+        };
+      } else if (countInStock > 0) {
+        return { 
+          text: `Limited Stock (${countInStock} remaining)`, 
+          color: 'text-yellow-600', 
+          icon: <CheckCircle size={16} className="mr-1" /> 
+        };
+      } else {
+        return { 
+          text: 'Currently Unavailable', 
+          color: 'text-red-600', 
+          icon: null 
+        };
+      }
     }
     
-    if (countInStock > 5) {
-      return { 
-        text: `In Stock (${countInStock} available)`, 
-        color: 'text-green-600', 
-        icon: <CheckCircle size={16} className="mr-1" /> 
-      };
-    } else if (countInStock > 0) {
-      return { 
-        text: `Limited Stock (${countInStock} remaining)`, 
-        color: 'text-yellow-600', 
-        icon: <CheckCircle size={16} className="mr-1" /> 
-      };
-    } else {
-      return { 
-        text: 'Currently Unavailable', 
-        color: 'text-red-600', 
-        icon: null 
-      };
+    // Fallback to VDB availability from specs
+    let vdbAvailability = null;
+    if (productType === 'lab-grown' && product.labGrownSpecs?.availability) {
+      vdbAvailability = product.labGrownSpecs.availability;
+    } else if (productType === 'natural-diamond' && product.naturalDiamondSpecs?.availability) {
+      vdbAvailability = product.naturalDiamondSpecs.availability;
     }
+    
+    if (vdbAvailability) {
+      const availabilityLower = vdbAvailability.toString().toLowerCase();
+      if (availabilityLower === 'available' || availabilityLower === 'guaranteed available' || availabilityLower === 'g') {
+        return { 
+          text: 'Available', 
+          color: 'text-green-600', 
+          icon: <CheckCircle size={16} className="mr-1" /> 
+        };
+      } else if (availabilityLower === 'unavailable' || availabilityLower === 'na') {
+        return { 
+          text: 'Currently Unavailable', 
+          color: 'text-red-600', 
+          icon: null 
+        };
+      }
+    }
+    
+    // Final fallback
+    return { text: 'Availability Unknown', color: 'text-gray-600', icon: null };
   };
   
   const availabilityStatus = getAvailabilityStatus();
+  
+  // Helper function to check if product is available for purchase
+  const isProductAvailable = () => {
+    // First check countInStock
+    if (countInStock !== undefined && countInStock !== null) {
+      return countInStock > 0;
+    }
+    
+    // Fallback to VDB availability from specs
+    let vdbAvailability = null;
+    if (productType === 'lab-grown' && product.labGrownSpecs?.availability) {
+      vdbAvailability = product.labGrownSpecs.availability;
+    } else if (productType === 'natural-diamond' && product.naturalDiamondSpecs?.availability) {
+      vdbAvailability = product.naturalDiamondSpecs.availability;
+    }
+    
+    if (vdbAvailability) {
+      const availabilityLower = vdbAvailability.toString().toLowerCase();
+      return availabilityLower === 'available' || availabilityLower === 'guaranteed available' || availabilityLower === 'g';
+    }
+    
+    // Default to unavailable if no availability info
+    return false;
+  };
   
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
@@ -195,10 +324,9 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
   const prevImage = () => {
     setSelectedImage((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
   };
-  
+
   const openFullscreen = () => {
     setShowFullscreen(true);
-    setShowZoom(true);
     document.body.style.overflow = 'hidden';
   };
 
@@ -207,23 +335,11 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
     document.body.style.overflow = '';
   };
   
-  // Handle mouse movement for zoom
-  const handleMouseMove = (e) => {
-    if (!showZoom) return;
-    
-    const container = imageContainerRef.current;
-    if (!container) return;
-    
-    const { left, top, width, height } = container.getBoundingClientRect();
-    const x = ((e.clientX - left) / width) * 100;
-    const y = ((e.clientY - top) / height) * 100;
-    
-    setMousePosition({ x, y });
-  };
+
   
   return (
     <>
-      <div className="bg-gray-50 min-h-screen">
+      <div className="bg-gray-50 min-h-screen pt-20">
         {/* Breadcrumb */}
         <div className="bg-white border-b border-gray-200">
           <div className="container mx-auto px-4 py-3">
@@ -241,15 +357,8 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Left: Diamond Images - Same size as JewelryDetail */}
             <div className="space-y-4">
-              {/* Main Image with Zoom */}
-              <div 
-                ref={imageContainerRef}
-                className="relative overflow-hidden rounded-lg aspect-square bg-white border border-gray-200 cursor-zoom-in"
-                onMouseMove={handleMouseMove}
-                onMouseEnter={() => setShowZoom(true)}
-                onMouseLeave={() => setShowZoom(false)}
-                onClick={openFullscreen}
-              >
+              {/* Main Image */}
+              <div className="relative overflow-hidden rounded-lg aspect-square bg-white border border-gray-200">
                 <img
                   src={currentImageUrl}
                   alt={name}
@@ -259,32 +368,8 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                   }}
                 />
                 
-                {showZoom && (
-                  <div 
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                      backgroundImage: `url(${currentImageUrl})`,
-                      backgroundPosition: `${mousePosition.x}% ${mousePosition.y}%`,
-                      backgroundSize: '200%',
-                      backgroundRepeat: 'no-repeat',
-                      opacity: 0.9,
-                    }}
-                  />
-                )}
-                
                 {/* Action Buttons */}
                 <div className="absolute top-4 right-4 flex flex-col space-y-2">
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openFullscreen();
-                    }}
-                    className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
-                    title="View Fullscreen"
-                  >
-                    <ZoomIn size={20} className="text-gray-700" />
-                  </button>
-                  
                   <button 
                     className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
                     title="360° View"
@@ -293,8 +378,9 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                   </button>
                   
                   <button 
+                    onClick={openFullscreen}
                     className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
-                    title="Video Available"
+                    title="View Fullscreen"
                   >
                     <Eye size={20} className="text-gray-700" />
                   </button>
@@ -325,19 +411,13 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                 {allImages.length > 1 && (
                   <>
                     <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        prevImage();
-                      }}
+                      onClick={prevImage}
                       className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 rounded-full p-1 shadow-md hover:bg-white transition-colors"
                     >
                       <ChevronLeft size={24} className="text-gray-700" />
                     </button>
                     <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        nextImage();
-                      }}
+                      onClick={nextImage}
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 rounded-full p-1 shadow-md hover:bg-white transition-colors"
                     >
                       <ChevronRight size={24} className="text-gray-700" />
@@ -367,6 +447,19 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                       />
                     </button>
                   ))}
+                  {/* Certificate Thumbnail - Attractive Design */}
+                  {certificateNumber && (
+                                          <button
+                        onClick={() => window.open(getCertificateUrl(certificateUrl, certificateNumber, displayCertification), '_blank')}
+                        className="flex-shrink-0 w-16 h-16 border-2 border-orange-200 rounded overflow-hidden bg-gradient-to-br from-orange-200 via-orange-300 to-amber-300 hover:from-orange-300 hover:via-orange-400 hover:to-amber-400 text-gray-800 flex flex-col items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                        title="View Certificate"
+                      >
+                        <Award size={16} className="mb-1 text-red-700" />
+                        <span className="text-[8px] font-bold uppercase tracking-wider leading-tight text-center text-gray-800">
+                          View<br />Cert
+                        </span>
+                      </button>
+                  )}
                 </div>
               )}
             </div>
@@ -383,16 +476,28 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                     </span>
                   </div>
                   <h1 className="text-2xl font-bold text-gray-900 mb-2">{name}</h1>
-                  {certification && (
-                    <div className="flex items-center space-x-2 mb-2">
+                  <div className="flex items-center space-x-2 mb-2">
+                    {displayCertification && (
                       <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium">
-                        {certification} Certified
+                        {displayCertification} Certified
                       </span>
-                      {product._id && (
-                        <span className="text-sm text-gray-500">Stock ID: {product._id?.slice(-8)}</span>
-                      )}
-                    </div>
-                  )}
+                    )}
+                    {stockNumber && (
+                      <span className="text-sm text-gray-500">SKU: {stockNumber}</span>
+                    )}
+                    {certificateNumber && (
+                      <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-500">Cert #: </span>
+                      <button
+                        onClick={() => window.open(getCertificateUrl(certificateUrl, certificateNumber, displayCertification), '_blank')}
+                        className="text-sm text-blue-600 hover:text-blue-800 underline cursor-pointer"
+                        title="View Certificate"
+                      >
+                        {certificateNumber}
+                      </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 {/* Price */}
@@ -427,15 +532,18 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                 
                 {/* Key Specifications Grid - 4Cs */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
-                  {carat && (
+                  {displayCarat && (
                     <div className="text-center p-3 border border-gray-200 rounded-lg">
-                      <div className="text-lg font-bold text-gray-900">{carat}</div>
+                      <div className="text-lg font-bold text-gray-900">{displayCarat} ct</div>
                       <div className="text-xs text-gray-500 uppercase tracking-wider">Carat</div>
+                      {pricePerCarat && (
+                        <div className="text-xs text-gray-400">${pricePerCarat.toLocaleString()}/ct</div>
+                      )}
                     </div>
                   )}
-                  {cut && (
+                  {displayCut && (
                     <div className="text-center p-3 border border-gray-200 rounded-lg">
-                      <div className={`text-lg font-bold ${getGradeColor(cut, 'cut')}`}>{cut}</div>
+                      <div className={`text-lg font-bold ${getGradeColor(displayCut, 'cut')}`}>{displayCut}</div>
                       <div className="text-xs text-gray-500 uppercase tracking-wider">Cut</div>
                     </div>
                   )}
@@ -445,6 +553,9 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                       <div className="text-xs text-gray-500 uppercase tracking-wider">Color</div>
                       {getGradeDescription(color, 'color') && (
                         <div className="text-xs text-gray-400">{getGradeDescription(color, 'color')}</div>
+                      )}
+                      {fancyColor && (
+                        <div className="text-xs text-blue-600 font-medium">{fancyColor}</div>
                       )}
                     </div>
                   )}
@@ -458,6 +569,36 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                     </div>
                   )}
                 </div>
+                
+                {/* Certificate Section */}
+                {/* {certificateNumber && (
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 mb-6 border border-blue-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-1">Diamond Certificate</h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          Certified by {displayCertification || 'IGI'}
+                        </p>
+                        <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-500">Cert #: </span>
+                        <button
+                          onClick={() => window.open(getCertificateUrl(certificateUrl, certificateNumber, displayCertification), '_blank')}
+                          className="text-blue-600 hover:text-blue-800 underline text-sm font-medium"
+                        >
+                          {certificateNumber}
+                        </button>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => window.open(getCertificateUrl(certificateUrl, certificateNumber, displayCertification), '_blank')}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                      >
+                        <Award size={16} />
+                        View Certificate
+                      </button>
+                    </div>
+                  </div>
+                )} */}
                 
                 {/* Ratings - Only show if rating exists */}
                 {rating > 0 && (
@@ -481,24 +622,26 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                 )}
                 
                 {/* Action Buttons */}
-                <div className="space-y-3">
+                <div className="flex gap-3">
                   <button 
                     onClick={() => setShowConfirmModal(true)}
-                    disabled={countInStock <= 0}
-                    className={`w-full py-3 px-6 font-medium rounded-lg transition-colors flex items-center justify-center gap-2 ${
-                      countInStock > 0 
+                    disabled={!isProductAvailable()}
+                    className={`flex-1 py-3 px-6 font-medium rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                      isProductAvailable() 
                         ? 'bg-primary hover:bg-primary-dark text-white' 
                         : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                     }`}
                   >
-                    <ShoppingCart size={18} />
-                    Buy Now
+                    <ShoppingBag size={18} />
+                    Place Order
                   </button>
                   
-                  <button className="w-full py-3 px-6 border border-primary text-primary hover:bg-primary/5 font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
+                  {/* <button 
+                    className="p-3 border border-primary text-primary hover:bg-primary/5 rounded-lg transition-colors flex items-center justify-center"
+                    title="Add to Wishlist"
+                  >
                     <Heart size={18} />
-                    Add to Wishlist
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </div>
@@ -528,41 +671,225 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
             {expandedSections.specifications && (
               <div className="px-6 pb-6">
                 <div className="grid grid-cols-1 gap-3">
+                  {/* Basic Information */}
+                  {stockNumber && (
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">SKU:</span>
+                      <span className="font-medium text-gray-900">{stockNumber}</span>
+                    </div>
+                  )}
                   {shape && (
                     <div className="flex justify-between py-2 border-b border-gray-100">
                       <span className="text-gray-600">Shape:</span>
                       <span className="font-medium text-gray-900">{shape}</span>
                     </div>
                   )}
+                  {displayCarat && (
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Carat Weight:</span>
+                      <span className="font-medium text-gray-900">{displayCarat} ct</span>
+                    </div>
+                  )}
+                  {pricePerCarat && (
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Price Per Carat:</span>
+                      <span className="font-medium text-gray-900">${pricePerCarat.toLocaleString()}</span>
+                    </div>
+                  )}
+                  
+                  {/* Quality Grades */}
+                  <div className="mt-4 mb-2">
+                    <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wider">Quality Grades</h4>
+                  </div>
+                  {color && (
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Color:</span>
+                      <div className="text-right">
+                        <span className={`font-medium ${getGradeColor(color, 'color')}`}>{color}</span>
+                        {getGradeDescription(color, 'color') && (
+                          <div className="text-xs text-gray-500">{getGradeDescription(color, 'color')}</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {clarity && (
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Clarity:</span>
+                      <div className="text-right">
+                        <span className={`font-medium ${getGradeColor(clarity, 'clarity')}`}>{clarity}</span>
+                        {getGradeDescription(clarity, 'clarity') && (
+                          <div className="text-xs text-gray-500">{getGradeDescription(clarity, 'clarity')}</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {displayCut && (
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Cut Grade:</span>
+                      <span className={`font-medium ${getGradeColor(displayCut, 'cut')}`}>{displayCut}</span>
+                    </div>
+                  )}
                   {polish && (
                     <div className="flex justify-between py-2 border-b border-gray-100">
                       <span className="text-gray-600">Polish:</span>
-                      <span className="font-medium text-gray-900">{polish}</span>
+                      <span className={`font-medium ${getGradeColor(polish, 'cut')}`}>{polish}</span>
                     </div>
                   )}
                   {symmetry && (
                     <div className="flex justify-between py-2 border-b border-gray-100">
                       <span className="text-gray-600">Symmetry:</span>
-                      <span className="font-medium text-gray-900">{symmetry}</span>
+                      <span className={`font-medium ${getGradeColor(symmetry, 'cut')}`}>{symmetry}</span>
                     </div>
                   )}
-                  {fluorescence && (
+                  
+                  {/* Optical Properties */}
+                  <div className="mt-4 mb-2">
+                    <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wider">Optical Properties</h4>
+                  </div>
+                  {displayFluorescence && (
                     <div className="flex justify-between py-2 border-b border-gray-100">
                       <span className="text-gray-600">Fluorescence:</span>
-                      <span className="font-medium text-gray-900">{fluorescence}</span>
+                      <div className="text-right">
+                        <span className={`font-medium ${getGradeColor(displayFluorescence, 'fluorescence')}`}>{displayFluorescence}</span>
+                        {fluorescenceColor && (
+                          <div className="text-xs text-gray-500">{fluorescenceColor}</div>
+                        )}
+                      </div>
                     </div>
                   )}
-                  {table && (
+                  {displayTable && (
                     <div className="flex justify-between py-2 border-b border-gray-100">
                       <span className="text-gray-600">Table:</span>
-                      <span className="font-medium text-gray-900">{table}%</span>
+                      <span className="font-medium text-gray-900">{displayTable}%</span>
                     </div>
                   )}
-                  {depth && (
+                  {displayDepth && (
                     <div className="flex justify-between py-2 border-b border-gray-100">
                       <span className="text-gray-600">Depth:</span>
-                      <span className="font-medium text-gray-900">{depth}%</span>
+                      <span className="font-medium text-gray-900">{displayDepth}%</span>
                     </div>
+                  )}
+                  {ratio && (
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Length/Width Ratio:</span>
+                      <span className="font-medium text-gray-900">{ratio}</span>
+                    </div>
+                  )}
+                  
+                  {/* Physical Measurements */}
+                  {(measurements || crownAngle || pavilionAngle) && (
+                    <>
+                      <div className="mt-4 mb-2">
+                        <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wider">Physical Measurements</h4>
+                      </div>
+                      {measurements && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Measurements:</span>
+                          <span className="font-medium text-gray-900">{measurements} mm</span>
+                        </div>
+                      )}
+                      {crownAngle && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Crown Angle:</span>
+                          <span className="font-medium text-gray-900">{crownAngle}°</span>
+                        </div>
+                      )}
+                      {pavilionAngle && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Pavilion Angle:</span>
+                          <span className="font-medium text-gray-900">{pavilionAngle}°</span>
+                        </div>
+                      )}
+                      {girdleThick && girdleThin && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Girdle:</span>
+                          <span className="font-medium text-gray-900">{girdleThin} to {girdleThick}</span>
+                        </div>
+                      )}
+                      {culetSize && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Culet:</span>
+                          <span className="font-medium text-gray-900">{culetSize}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  
+                  {/* Fancy Color Details */}
+                  {fancyColor && (
+                    <>
+                      <div className="mt-4 mb-2">
+                        <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wider">Fancy Color</h4>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Fancy Color:</span>
+                        <span className="font-medium text-blue-600">{fancyColor}</span>
+                      </div>
+                      {fancyColorIntensity && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Intensity:</span>
+                          <span className="font-medium text-gray-900">{fancyColorIntensity}</span>
+                        </div>
+                      )}
+                      {fancyColorOvertone && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Overtone:</span>
+                          <span className="font-medium text-gray-900">{fancyColorOvertone}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  
+                  {/* Lab-Grown Specific */}
+                  {productType === 'lab-grown' && growthType && (
+                    <>
+                      <div className="mt-4 mb-2">
+                        <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wider">Lab-Grown Details</h4>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Growth Method:</span>
+                        <span className="font-medium text-green-600">{growthType}</span>
+                      </div>
+                    </>
+                  )}
+                  
+                  {/* Certification */}
+                  <div className="mt-4 mb-2">
+                    <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wider">Certification</h4>
+                  </div>
+                  {displayCertification && (
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Laboratory:</span>
+                      <span className="font-medium text-blue-600">{displayCertification}</span>
+                    </div>
+                  )}
+                  {certificateNumber && (
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Certificate Number:</span>
+                      <button
+                        onClick={() => window.open(getCertificateUrl(certificateUrl, certificateNumber, displayCertification), '_blank')}
+                        className="font-medium text-blue-600 hover:text-blue-800 underline cursor-pointer flex items-center gap-1"
+                        title="View Certificate"
+                      >
+                        {certificateNumber}
+                        <Award size={14} />
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Location */}
+                  {location && (location.city || location.state || location.country) && (
+                    <>
+                      <div className="mt-4 mb-2">
+                        <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wider">Location</h4>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Location:</span>
+                        <span className="font-medium text-gray-900">
+                          {[location.city, location.state, location.country].filter(Boolean).join(', ')}
+                        </span>
+                      </div>
+                    </>
                   )}
                 </div>
               </div>
@@ -724,40 +1051,19 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
           <div className="absolute top-4 right-4 z-10">
             <button 
               onClick={closeFullscreen}
-              className="bg-white/10 hover:bg-white/20 p-2 rounded-full text-black border border-black transition-colors"
+              className="bg-white/10 hover:bg-white/20 p-2 rounded-full text-white border border-white/20 transition-colors"
             >
               ✕
             </button>
           </div>
           
-          <div 
-            ref={fullscreenImageRef}
-            className="relative w-full h-full flex items-center justify-center overflow-hidden"
-            onMouseMove={(e) => {
-              if (!fullscreenImageRef.current) return;
-              const container = fullscreenImageRef.current;
-              const { left, top, width, height } = container.getBoundingClientRect();
-              const x = ((e.clientX - left) / width) * 100;
-              const y = ((e.clientY - top) / height) * 100;
-              setMousePosition({ x, y });
-            }}
-          >
+          <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
             <img
               src={currentImageUrl}
               alt={name}
-              className="max-h-[90vh] max-w-[90vw] object-contain opacity-40"
+              className="max-h-[90vh] max-w-[90vw] object-contain"
               onError={(e) => {
                 e.target.src = PLACEHOLDER_IMAGES.diamond;
-              }}
-            />
-            
-            <div 
-              className="absolute inset-0 pointer-events-none flex items-center justify-center"
-              style={{
-                backgroundImage: `url(${currentImageUrl})`,
-                backgroundPosition: `${mousePosition.x}% ${mousePosition.y}%`,
-                backgroundSize: `${zoomLevel * 100}%`,
-                backgroundRepeat: 'no-repeat',
               }}
             />
             
@@ -780,7 +1086,7 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
           </div>
         </div>
       )}
-      
+
       {/* Confirm Order Modal */}
       <ConfirmOrderModal 
         isOpen={showConfirmModal}
@@ -789,6 +1095,9 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
         productPrice={onSale && salePrice ? salePrice : price}
         productImage={currentImageUrl}
         productId={product._id}
+        productType="Diamond"
+        stockNumber={product?.stockNumber}
+        product={product}
       />
     </>
   );

@@ -13,10 +13,15 @@ const Navbar = () => {
     // { name: 'ENGAGEMENT', path: '/engagement' },
     // { name: 'WEDDING', path: '/wedding' },
     { name: 'DIAMONDS', path: '/diamonds' },
-    { name: 'JEWELLERY', path: '/jewellery' },
+    { name: 'JEWELRY', path: '/jewelry' },
     { name: 'ABOUT US', path: '/why-choose-us' },
     { name: 'CONTACT', path: '/contact' },
   ];
+
+  // Helper function to check if link is active
+  const isLinkActive = (linkPath) => {
+    return location.pathname === linkPath;
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -58,15 +63,19 @@ const Navbar = () => {
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-6">
           {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              to={link.path}
-              className={`text-sm font-medium hover:text-primary transition-colors ${
-                location.pathname === link.path ? 'text-primary border-b-2 border-primary pb-1' : 'text-gray-700'
-              }`}
-            >
-              {link.name}
-            </Link>
+            <div key={link.name} className="relative">
+              <Link
+                to={link.path}
+                className={`text-sm font-medium hover:text-primary transition-colors pb-2 ${
+                  isLinkActive(link.path) ? 'text-primary' : 'text-gray-700'
+                }`}
+              >
+                {link.name}
+              </Link>
+              {isLinkActive(link.path) && (
+                <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full"></div>
+              )}
+            </div>
           ))}
         </div>
 
@@ -78,9 +87,9 @@ const Navbar = () => {
           >
             BOOK APPOINTMENT
           </Link>
-          <Link to="/cart" className="text-gray-700 hover:text-primary">
+          {/* <Link to="/cart" className="text-gray-700 hover:text-primary">
             <ShoppingBag size={24} />
-          </Link>
+          </Link> */}
         </div>
 
         {/* Mobile Menu Button */}
@@ -102,7 +111,7 @@ const Navbar = () => {
                   key={link.name}
                   to={link.path}
                   className={`text-sm font-medium px-2 py-2 hover:bg-gray-100 rounded ${
-                    location.pathname === link.path ? 'text-primary' : 'text-gray-700'
+                    isLinkActive(link.path) ? 'text-primary bg-primary/10' : 'text-gray-700'
                   }`}
                   onClick={closeMenu}
                 >

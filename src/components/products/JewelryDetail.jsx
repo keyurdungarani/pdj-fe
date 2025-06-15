@@ -20,10 +20,12 @@ import {
   ChevronUp,
   Package,
   RefreshCw,
-  Users
+  Users,
+  ShoppingBag
 } from 'lucide-react';
 import ConfirmOrderModal from '../common/ConfirmOrderModal';
 import { PLACEHOLDER_IMAGES } from '../../utils/placeholderImage';
+import { useNavigate } from 'react-router-dom';
 
 const JewelryDetail = ({ product, type = 'jewelry' }) => {
   const [selectedImage, setSelectedImage] = useState(0);
@@ -41,6 +43,7 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
     quality: false,
     care: false
   });
+  const navigate = useNavigate();
   
   const imageContainerRef = useRef(null);
   const fullscreenImageRef = useRef(null);
@@ -70,15 +73,35 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
     customizationOptions = {}
   } = product;
   
-  // Extract jewelry specifications
+  // Extract jewelry specifications from VDB-compliant schema
   const {
-    material = jewelrySpecs?.material,
-    caratWeight = jewelrySpecs?.caratWeight,
-    diamondType = jewelrySpecs?.diamondType,
-    totalDiamonds = jewelrySpecs?.totalDiamonds,
-    setting = jewelrySpecs?.setting,
-    style = jewelrySpecs?.style
+    // Basic jewelry info
+    stockNumber = jewelrySpecs?.stockNumber,
+    jewelryStyle = jewelrySpecs?.jewelryStyle,
+    jewelryClassification = jewelrySpecs?.jewelryClassification,
+    metal = jewelrySpecs?.metal,
+    totalCaratWeight = jewelrySpecs?.totalCaratWeight,
+    totalNumberOfStones = jewelrySpecs?.totalNumberOfStones,
+    mount = jewelrySpecs?.mount,
+    brand = jewelrySpecs?.brand,
+    
+    // Center stone details
+    centerStone = jewelrySpecs?.centerStone || {},
+    sideStone = jewelrySpecs?.sideStone || {},
+    
+    // Legacy fields for backward compatibility
+    material: legacyMaterial = jewelrySpecs?.material || details?.material,
+    caratWeight: legacyCaratWeight = jewelrySpecs?.caratWeight || details?.caratWeight,
+    diamondType = jewelrySpecs?.diamondType || details?.diamondType,
+    totalDiamonds = jewelrySpecs?.totalDiamonds || details?.totalDiamonds,
+    setting = jewelrySpecs?.setting || details?.setting,
+    style: legacyStyle = jewelrySpecs?.style || details?.style
   } = { ...details, ...jewelrySpecs };
+  
+  // Use new or legacy values
+  const displayMetal = metal || legacyMaterial;
+  const displayCaratWeight = totalCaratWeight || legacyCaratWeight;
+  const displayStyle = jewelryStyle || legacyStyle;
   
   const formattedPrice = price?.toLocaleString('en-US') || '';
   const formattedOriginalPrice = originalPrice?.toLocaleString('en-US') || '';
@@ -138,6 +161,40 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
     setMousePosition({ x, y });
   };
   
+  // Get availability status dynamically
+  const getAvailabilityStatus = () => {
+    if (countInStock === undefined || countInStock === null) {
+      return { text: 'Availability Unknown', color: 'text-gray-600', icon: null };
+    }
+    
+    if (countInStock > 5) {
+      return { 
+        text: `In Stock (${countInStock} available)`, 
+        color: 'text-green-600', 
+        icon: <CheckCircle size={16} className="mr-1" /> 
+      };
+    } else if (countInStock > 0) {
+      return { 
+        text: `Limited Stock (${countInStock} remaining)`, 
+        color: 'text-yellow-600', 
+        icon: <CheckCircle size={16} className="mr-1" /> 
+      };
+    } else {
+      return { 
+        text: 'Currently Unavailable', 
+        color: 'text-red-600', 
+        icon: null 
+      };
+    }
+  };
+
+  const availabilityStatus = getAvailabilityStatus();
+
+  // Helper function to check if product is available for purchase
+  const isProductAvailable = () => {
+    return countInStock !== undefined && countInStock !== null && countInStock > 0;
+  };
+
   // Get jewelry type icon
   const getJewelryIcon = () => {
     const categoryLower = category?.toLowerCase();
@@ -151,7 +208,7 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
   
   return (
     <>
-      <div className="bg-gray-50 min-h-screen">
+      <div className="bg-gray-50 min-h-screen pt-20">
         {/* Breadcrumb */}
         <div className="bg-white border-b border-gray-200">
           <div className="container mx-auto px-4 py-3">
@@ -315,9 +372,9 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
                     </span>
                   </div>
                   <h1 className="text-2xl font-bold text-gray-900 mb-2">{name}</h1>
-                  {product._id && (
-                    <span className="text-sm text-gray-500">Item ID: {product._id?.slice(-8)}</span>
-                  )}
+                                  {stockNumber && (
+                  <span className="text-sm text-gray-500">SKU: {stockNumber}</span>
+                )}
                 </div>
                 
                 {/* Price */}
@@ -337,43 +394,41 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
                   </div>
                 </div>
                 
-                {/* Availability */}
-                <div className="flex items-center justify-between py-3 border-t border-b border-gray-200 mb-6">
-                  <span className="text-gray-700 font-medium">Availability:</span>
-                  {countInStock > 0 ? (
-                    <span className="text-green-600 font-medium flex items-center">
-                      <CheckCircle size={16} className="mr-1" />
-                      In Stock ({countInStock} available)
+                {/* Availability - Dynamic */}
+                {(countInStock !== undefined && countInStock !== null) && (
+                  <div className="flex items-center justify-between py-3 border-t border-b border-gray-200 mb-6">
+                    <span className="text-gray-700 font-medium">Availability:</span>
+                    <span className={`font-medium flex items-center ${availabilityStatus.color}`}>
+                      {availabilityStatus.icon}
+                      {availabilityStatus.text}
                     </span>
-                  ) : (
-                    <span className="text-red-600 font-medium">Out of Stock</span>
-                  )}
-                </div>
+                  </div>
+                )}
                 
                 {/* Key Highlights */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
-                  {material && (
+                  {displayMetal && (
                     <div className="text-center p-3 border border-gray-200 rounded-lg">
-                      <div className="text-lg font-bold text-gray-900">{material}</div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wider">Material</div>
+                      <div className="text-lg font-bold text-gray-900">{displayMetal}</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wider">Metal</div>
                     </div>
                   )}
-                  {caratWeight && (
+                  {displayCaratWeight && (
                     <div className="text-center p-3 border border-gray-200 rounded-lg">
-                      <div className="text-lg font-bold text-gray-900">{caratWeight}ct</div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wider">Total Weight</div>
+                      <div className="text-lg font-bold text-gray-900">{displayCaratWeight}ct</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wider">Total Carat</div>
                     </div>
                   )}
-                  {totalDiamonds && (
+                  {(totalNumberOfStones || totalDiamonds) && (
                     <div className="text-center p-3 border border-gray-200 rounded-lg">
-                      <div className="text-lg font-bold text-gray-900">{totalDiamonds}</div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wider">Diamonds</div>
+                      <div className="text-lg font-bold text-gray-900">{totalNumberOfStones || totalDiamonds}</div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wider">Stones</div>
                     </div>
                   )}
-                  {customizable && (
-                    <div className="text-center p-3 border border-purple-200 bg-purple-50 rounded-lg">
-                      <div className="text-lg font-bold text-purple-700">Custom</div>
-                      <div className="text-xs text-purple-500 uppercase tracking-wider">Available</div>
+                  {jewelryClassification && (
+                    <div className="text-center p-3 border border-blue-200 bg-blue-50 rounded-lg">
+                      <div className="text-lg font-bold text-blue-700">{jewelryClassification}</div>
+                      <div className="text-xs text-blue-500 uppercase tracking-wider">Type</div>
                     </div>
                   )}
                 </div>
@@ -400,24 +455,56 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
                 )}
                 
                 {/* Action Buttons */}
-                <div className="space-y-3">
+                <div className="flex gap-3">
                   <button 
                     onClick={() => setShowConfirmModal(true)}
-                    disabled={countInStock <= 0}
-                    className={`w-full py-3 px-6 font-medium rounded-lg transition-colors flex items-center justify-center gap-2 ${
-                      countInStock > 0 
+                    disabled={!isProductAvailable()}
+                    className={`flex-1 py-3 px-6 font-medium rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                      isProductAvailable() 
                         ? 'bg-primary hover:bg-primary-dark text-white' 
                         : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                     }`}
                   >
-                    <ShoppingCart size={18} />
-                    Buy Now
+                    <ShoppingBag size={18} />
+                    Place Order
                   </button>
                   
-                  <button className="w-full py-3 px-6 border border-primary text-primary hover:bg-primary/5 font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
+                  {/* <button 
+                    className="p-3 border border-primary text-primary hover:bg-primary/5 rounded-lg transition-colors flex items-center justify-center"
+                    title="Add to Wishlist"
+                  >
                     <Heart size={18} />
-                    Add to Wishlist
-                  </button>
+                  </button> */}
+                </div>
+                
+                {/* Customization Section */}
+                <div className="mt-6 bg-gradient-to-r from-rose-25 to-amber-25 border border-rose-100 rounded-2xl p-6 shadow-sm backdrop-blur-sm">
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 bg-gradient-to-r from-rose-200 to-amber-200 rounded-full flex items-center justify-center shadow-sm">
+                        <Sparkles size={24} className="text-rose-600" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-lg font-medium text-rose-700 mb-2">
+                        Make It Uniquely Yours
+                      </h4>
+                      <p className="text-gray-500 mb-1 text-sm">
+                        You can customize this jewelry according to your preferences
+                      </p>
+                      <h2 className="text-base font-medium text-amber-600 mb-4">
+                        Any customization?
+                      </h2>
+                      <button 
+                        onClick={() => navigate('/book-appointment')}
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-rose-300 to-amber-300 hover:from-rose-400 hover:to-amber-400 text-rose-700 hover:text-rose-800 font-medium py-2.5 px-5 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
+                      >
+                        <span className="text-xs bg-white/60 px-2 py-0.5 rounded-full text-rose-600">Better</span>
+                        Book Appointment
+                        <Sparkles size={16} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -447,34 +534,175 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
             {expandedSections.specifications && (
               <div className="px-6 pb-6">
                 <div className="grid grid-cols-1 gap-3">
+                  {/* Basic Information */}
+                  {stockNumber && (
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">SKU:</span>
+                      <span className="font-medium text-gray-900">{stockNumber}</span>
+                    </div>
+                  )}
+                  {displayStyle && (
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Style:</span>
+                      <span className="font-medium text-gray-900">{displayStyle}</span>
+                    </div>
+                  )}
+                  {jewelryClassification && (
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Classification:</span>
+                      <span className="font-medium text-gray-900">{jewelryClassification}</span>
+                    </div>
+                  )}
+                  {displayMetal && (
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Metal:</span>
+                      <span className="font-medium text-gray-900">{displayMetal}</span>
+                    </div>
+                  )}
+                  {mount && (
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Mount:</span>
+                      <span className="font-medium text-gray-900">{mount}</span>
+                    </div>
+                  )}
+                  {displayCaratWeight && (
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Total Carat Weight:</span>
+                      <span className="font-medium text-gray-900">{displayCaratWeight} ct</span>
+                    </div>
+                  )}
+                  {(totalNumberOfStones || totalDiamonds) && (
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Total Stones:</span>
+                      <span className="font-medium text-gray-900">{totalNumberOfStones || totalDiamonds}</span>
+                    </div>
+                  )}
+                  {brand && (
+                    <div className="flex justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Brand:</span>
+                      <span className="font-medium text-gray-900">{brand}</span>
+                    </div>
+                  )}
+                  
+                  {/* Center Stone Details */}
+                  {centerStone && Object.keys(centerStone).length > 0 && (
+                    <>
+                      <div className="mt-4 mb-2">
+                        <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wider">Center Stone</h4>
+                      </div>
+                      {centerStone.type && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Type:</span>
+                          <span className="font-medium text-gray-900">{centerStone.type}</span>
+                        </div>
+                      )}
+                      {centerStone.shape && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Shape:</span>
+                          <span className="font-medium text-gray-900">{centerStone.shape}</span>
+                        </div>
+                      )}
+                      {centerStone.caratWeight && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Carat Weight:</span>
+                          <span className="font-medium text-gray-900">{centerStone.caratWeight} ct</span>
+                        </div>
+                      )}
+                      {centerStone.color && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Color:</span>
+                          <span className="font-medium text-gray-900">{centerStone.color}</span>
+                        </div>
+                      )}
+                      {centerStone.clarity && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Clarity:</span>
+                          <span className="font-medium text-gray-900">{centerStone.clarity}</span>
+                        </div>
+                      )}
+                      {centerStone.cut && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Cut:</span>
+                          <span className="font-medium text-gray-900">{centerStone.cut}</span>
+                        </div>
+                      )}
+                      {centerStone.fluorescence && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Fluorescence:</span>
+                          <span className="font-medium text-gray-900">{centerStone.fluorescence}</span>
+                        </div>
+                      )}
+                      {centerStone.lab && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Lab:</span>
+                          <span className="font-medium text-gray-900">{centerStone.lab}</span>
+                        </div>
+                      )}
+                      {centerStone.certNumber && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Certificate #:</span>
+                          <span className="font-medium text-gray-900">{centerStone.certNumber}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  
+                  {/* Side Stone Details */}
+                  {sideStone && Object.keys(sideStone).length > 0 && (
+                    <>
+                      <div className="mt-4 mb-2">
+                        <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wider">Side Stones</h4>
+                      </div>
+                      {sideStone.type && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Type:</span>
+                          <span className="font-medium text-gray-900">{sideStone.type}</span>
+                        </div>
+                      )}
+                      {sideStone.totalStones && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Total Stones:</span>
+                          <span className="font-medium text-gray-900">{sideStone.totalStones}</span>
+                        </div>
+                      )}
+                      {sideStone.shape && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Shape:</span>
+                          <span className="font-medium text-gray-900">{sideStone.shape}</span>
+                        </div>
+                      )}
+                      {sideStone.caratWeight && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Total Carat Weight:</span>
+                          <span className="font-medium text-gray-900">{sideStone.caratWeight} ct</span>
+                        </div>
+                      )}
+                      {sideStone.color && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Color:</span>
+                          <span className="font-medium text-gray-900">{sideStone.color}</span>
+                        </div>
+                      )}
+                      {sideStone.clarity && (
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Clarity:</span>
+                          <span className="font-medium text-gray-900">{sideStone.clarity}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  
+                  {/* Legacy fields for backward compatibility */}
                   {setting && (
                     <div className="flex justify-between py-2 border-b border-gray-100">
                       <span className="text-gray-600">Setting:</span>
                       <span className="font-medium text-gray-900">{setting}</span>
                     </div>
                   )}
-                  {style && (
-                    <div className="flex justify-between py-2 border-b border-gray-100">
-                      <span className="text-gray-600">Style:</span>
-                      <span className="font-medium text-gray-900">{style}</span>
-                    </div>
-                  )}
                   {diamondType && (
                     <div className="flex justify-between py-2 border-b border-gray-100">
                       <span className="text-gray-600">Diamond Type:</span>
                       <span className="font-medium text-gray-900">{diamondType}</span>
-                    </div>
-                  )}
-                  {details.weight && (
-                    <div className="flex justify-between py-2 border-b border-gray-100">
-                      <span className="text-gray-600">Total Weight:</span>
-                      <span className="font-medium text-gray-900">{details.weight}</span>
-                    </div>
-                  )}
-                  {details.purity && (
-                    <div className="flex justify-between py-2 border-b border-gray-100">
-                      <span className="text-gray-600">Metal Purity:</span>
-                      <span className="font-medium text-gray-900">{details.purity}</span>
                     </div>
                   )}
                 </div>
@@ -546,19 +774,27 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
                   <div className="text-sm text-gray-600 space-y-3">
                     <div className="flex items-start space-x-2">
                       <CheckCircle size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
-                      <span>Lifetime warranty coverage</span>
+                      <span>Expert craftsmanship guarantee</span>
                     </div>
                     <div className="flex items-start space-x-2">
                       <CheckCircle size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
-                      <span>30-day return policy</span>
+                      <span>Ethically sourced materials</span>
                     </div>
                     <div className="flex items-start space-x-2">
                       <CheckCircle size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
-                      <span>Free resizing service</span>
+                      <span>Professional consultation included</span>
                     </div>
                     <div className="flex items-start space-x-2">
                       <CheckCircle size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
                       <span>Certified authenticity</span>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                      <CheckCircle size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
+                      <span>Bespoke customization available</span>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                      <CheckCircle size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
+                      <span>Quality control standards</span>
                     </div>
                   </div>
                 </div>
@@ -680,6 +916,9 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
         productPrice={onSale && salePrice ? salePrice : price}
         productImage={currentImageUrl}
         productId={product._id}
+        productType="Jewelry"
+        stockNumber={product?.jewelrySpecs?.stockNumber}
+        product={product}
       />
     </>
   );

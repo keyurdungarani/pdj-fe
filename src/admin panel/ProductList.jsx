@@ -455,18 +455,18 @@ try {
   return (
     <div className={hideProductList ? "" : "p-6 bg-[#F9F9F9] min-h-screen font-sans"}>
       {!hideProductList && (
-        <h1 className="text-4xl font-serif text-[#D4AF37] text-center mb-8">
-          Admin Panel
-        </h1>
+      <h1 className="text-4xl font-serif text-[#D4AF37] text-center mb-8">
+        Admin Panel
+      </h1>
       )}
 
       {/* Form Section */}
       <div className={hideProductList ? "" : "bg-white rounded-lg shadow-lg p-8 mb-12 max-w-4xl mx-auto border border-[#D4AF37]"}>
         <form onSubmit={handleSubmit}>
           {!hideProductList && (
-            <h2 className="text-2xl font-semibold text-[#333] mb-6">
-              Add a New Product
-            </h2>
+          <h2 className="text-2xl font-semibold text-[#333] mb-6">
+            Add a New Product
+          </h2>
           )}
 
           {error && (
@@ -510,8 +510,8 @@ try {
             </div>
 
             <div>
-              <label className="block text-lg font-medium mb-2 text-[#555]">
-                Price <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Price ($) <span className="text-red-500">*</span>
               </label>
               <input
                 className={`border ${errors.price ? 'border-red-500' : 'border-[#D4AF37]'} rounded-md p-3 w-full focus:outline-none focus:ring focus:ring-[#D4AF37]`}
@@ -754,33 +754,33 @@ try {
 
       {/* Product List Section */}
       {!hideProductList && (
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl mx-auto border border-[#D4AF37]">
-          <h2 className="text-2xl font-semibold text-[#333] mb-6">
-            Product List
-          </h2>
-          <table className="min-w-full bg-white">
-            <thead>
-              <tr>
-                <th className="py-2 px-4 border-b border-[#D4AF37]">Name</th>
-                <th className="py-2 px-4 border-b border-[#D4AF37]">Type</th>
-                <th className="py-2 px-4 border-b border-[#D4AF37]">Price</th>
-                <th className="py-2 px-4 border-b border-[#D4AF37]">Actions</th>
+      <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl mx-auto border border-[#D4AF37]">
+        <h2 className="text-2xl font-semibold text-[#333] mb-6">
+          Product List
+        </h2>
+        <table className="min-w-full bg-white">
+          <thead>
+            <tr>
+              <th className="py-2 px-4 border-b border-[#D4AF37]">Name</th>
+              <th className="py-2 px-4 border-b border-[#D4AF37]">Type</th>
+              <th className="py-2 px-4 border-b border-[#D4AF37]">Price</th>
+              <th className="py-2 px-4 border-b border-[#D4AF37]">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            { products.length > 0 && products.map((product) => (
+              <tr key={product.id}>
+                <td className="py-2 px-4 border-b border-[#D4AF37]">{product.name}</td>
+                <td className="py-2 px-4 border-b border-[#D4AF37]">{product.type}</td>
+                <td className="py-2 px-4 border-b border-[#D4AF37]">${product.price}</td>
+                <td className="py-2 px-4 border-b border-[#D4AF37]">
+                  <button className="text-red-500 hover:underline">Delete</button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              { products.length > 0 && products.map((product) => (
-                <tr key={product.id}>
-                  <td className="py-2 px-4 border-b border-[#D4AF37]">{product.name}</td>
-                  <td className="py-2 px-4 border-b border-[#D4AF37]">{product.type}</td>
-                  <td className="py-2 px-4 border-b border-[#D4AF37]">{product.price}</td>
-                  <td className="py-2 px-4 border-b border-[#D4AF37]">
-                    <button className="text-red-500 hover:underline">Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
+      </div>
       )}
     </div>
   );

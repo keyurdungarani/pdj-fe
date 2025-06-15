@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Calendar, Clock, User, Mail, Phone, 
   Filter, Search, ChevronLeft, ChevronRight, 
-  Edit, Trash2, X, Check, AlertTriangle, Eye
+  Edit, Trash2, X, Check, AlertTriangle, Eye, DollarSign
 } from 'lucide-react';
 import { appointmentAPI } from '../../services/api';
 import { toast } from 'react-toastify';
+import { formatBudgetRange } from '../../utils/priceFormatter';
 
 const AppointmentsPanel = () => {
   const [appointments, setAppointments] = useState([]);
@@ -157,10 +158,33 @@ const AppointmentsPanel = () => {
     }
   };
 
-  // Format date for display
-  const formatDate = (dateString) => {
+  // Format date and time for display
+  const formatDateTime = (dateTimeString) => {
+    const options = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    };
+    return new Date(dateTimeString).toLocaleDateString('en-US', options);
+  };
+
+  // Format date only for display
+  const formatDate = (dateTimeString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+    return new Date(dateTimeString).toLocaleDateString('en-US', options);
+  };
+
+  // Format time only for display
+  const formatTime = (dateTimeString) => {
+    const options = { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    };
+    return new Date(dateTimeString).toLocaleTimeString('en-US', options);
   };
 
   // Helper function to get status color
@@ -264,13 +288,19 @@ const AppointmentsPanel = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Customer
+                      Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Phone
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date & Time
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Consultation Type
+                      Service
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
@@ -283,58 +313,37 @@ const AppointmentsPanel = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {appointments.map((appointment) => (
                     <tr key={appointment._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
-                            <User size={16} className="text-gray-500" />
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {appointment.firstName} {appointment.lastName}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {appointment.email}
-                            </div>
-                          </div>
-                        </div>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {appointment.fullName}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {appointment.email || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {appointment.phone}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDateTime(appointment.consultationDateTime)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {appointment.assistanceType}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {formatDate(appointment.consultationDate)}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {appointment.consultationTime}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {appointment.assistanceType}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(appointment.status)}`}>
-                          {appointment.status || 'pending'}
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(appointment.status)}`}>
+                          {appointment.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button 
-                          onClick={() => openViewModal(appointment)}
-                          className="text-blue-600 hover:text-blue-900 mr-3"
+                        <select
+                          value={appointment.status}
+                          onChange={(e) => handleStatusUpdate(appointment._id, e.target.value)}
+                          className="text-sm border border-gray-300 rounded px-2 py-1"
                         >
-                          <Eye size={18} />
-                        </button>
-                        <button 
-                          onClick={() => openEditModal(appointment)}
-                          className="text-indigo-600 hover:text-indigo-900 mr-3"
-                        >
-                          <Edit size={18} />
-                        </button>
-                        <button 
-                          onClick={() => openDeleteModal(appointment)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                          <option value="pending">Pending</option>
+                          <option value="confirmed">Confirmed</option>
+                          <option value="cancelled">Cancelled</option>
+                          <option value="completed">Completed</option>
+                        </select>
                       </td>
                     </tr>
                   ))}
@@ -394,7 +403,7 @@ const AppointmentsPanel = () => {
                     <p className="flex items-start">
                       <User className="mr-2 h-5 w-5 text-gray-400 flex-shrink-0 mt-0.5" />
                       <span className="text-gray-800">
-                        {selectedAppointment.firstName} {selectedAppointment.lastName}
+                        {selectedAppointment.fullName}
                       </span>
                     </p>
                     <p className="flex items-start">
@@ -419,17 +428,17 @@ const AppointmentsPanel = () => {
                   <div className="space-y-3">
                     <p className="flex items-start">
                       <Calendar className="mr-2 h-5 w-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-800">{formatDate(selectedAppointment.consultationDate)}</span>
+                      <span className="text-gray-800">{formatDate(selectedAppointment.consultationDateTime)}</span>
                     </p>
                     <p className="flex items-start">
                       <Clock className="mr-2 h-5 w-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-800">{selectedAppointment.consultationTime}</span>
+                      <span className="text-gray-800">{formatTime(selectedAppointment.consultationDateTime)}</span>
                     </p>
                     <p className="text-gray-800">
                       <span className="font-medium">Consultation Type:</span> {selectedAppointment.assistanceType}
                     </p>
                     <p className="text-gray-800">
-                      <span className="font-medium">Budget:</span> {selectedAppointment.budget ? `₹${selectedAppointment.budget}` : 'Not specified'}
+                      <span className="font-medium">Budget:</span> {formatBudgetRange(selectedAppointment.budget)}
                     </p>
                     <p className="flex items-start">
                       <span className="font-medium mr-2">Status:</span>
@@ -492,7 +501,7 @@ const AppointmentsPanel = () => {
                   Customer Name
                 </label>
                 <p className="text-gray-800">
-                  {selectedAppointment.firstName} {selectedAppointment.lastName}
+                  {selectedAppointment.fullName}
                 </p>
               </div>
               
@@ -501,7 +510,7 @@ const AppointmentsPanel = () => {
                   Appointment Date & Time
                 </label>
                 <p className="text-gray-800">
-                  {formatDate(selectedAppointment.consultationDate)} | {selectedAppointment.consultationTime}
+                  {formatDate(selectedAppointment.consultationDateTime)} | {formatTime(selectedAppointment.consultationDateTime)}
                 </p>
               </div>
               
@@ -571,7 +580,7 @@ const AppointmentsPanel = () => {
               </div>
               
               <p className="text-gray-700">
-                Are you sure you want to delete the appointment for <span className="font-medium">{selectedAppointment.firstName} {selectedAppointment.lastName}</span> on <span className="font-medium">{formatDate(selectedAppointment.consultationDate)}</span>?
+                Are you sure you want to delete the appointment for <span className="font-medium">{selectedAppointment.fullName}</span> on <span className="font-medium">{formatDateTime(selectedAppointment.consultationDateTime)}</span>?
               </p>
             </div>
             <div className="p-4 border-t border-gray-200 flex justify-end">

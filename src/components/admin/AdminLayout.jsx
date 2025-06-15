@@ -17,6 +17,7 @@ import {
 const AdminLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [productMenuOpen, setProductMenuOpen] = useState(false);
+  const [usersMenuOpen, setUsersMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -40,6 +41,7 @@ const AdminLayout = ({ children }) => {
       active: location.pathname.includes('/admin/product'),
       submenu: [
         { title: 'Add Product', path: '/admin/products/add' },
+        { title: 'Bulk Uploads', path: '/admin/products/bulk-upload' },
         { title: 'Manage Products', path: '/admin/product-panel' }
       ]
     },
@@ -52,8 +54,13 @@ const AdminLayout = ({ children }) => {
     {
       title: 'Users',
       icon: Users,
-      path: '/admin/users',
-      active: location.pathname === '/admin/users'
+      hasSubmenu: true,
+      active: location.pathname.includes('/admin/users') || location.pathname.includes('/admin/contacts') || location.pathname.includes('/admin/orders'),
+      submenu: [
+        { title: 'User Management', path: '/admin/users' },
+        { title: 'Orders', path: '/admin/orders' },
+        { title: 'Contact Us', path: '/admin/contacts' }
+      ]
     },
     {
       title: 'Settings',
@@ -94,7 +101,13 @@ const AdminLayout = ({ children }) => {
               {item.hasSubmenu ? (
                 <div>
                   <button
-                    onClick={() => setProductMenuOpen(!productMenuOpen)}
+                    onClick={() => {
+                      if (item.title === 'Products') {
+                        setProductMenuOpen(!productMenuOpen);
+                      } else if (item.title === 'Users') {
+                        setUsersMenuOpen(!usersMenuOpen);
+                      }
+                    }}
                     className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
                       item.active ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100'
                     }`}
@@ -104,11 +117,13 @@ const AdminLayout = ({ children }) => {
                       {sidebarOpen && <span className="font-medium">{item.title}</span>}
                     </div>
                     {sidebarOpen && (
-                      productMenuOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />
+                      ((item.title === 'Products' && productMenuOpen) || (item.title === 'Users' && usersMenuOpen)) 
+                        ? <ChevronDown size={16} /> 
+                        : <ChevronRight size={16} />
                     )}
                   </button>
                   
-                  {productMenuOpen && sidebarOpen && (
+                  {((item.title === 'Products' && productMenuOpen) || (item.title === 'Users' && usersMenuOpen)) && sidebarOpen && (
                     <div className="ml-6 mt-2 space-y-1">
                       {item.submenu.map((subItem, subIndex) => (
                         <Link
@@ -163,9 +178,12 @@ const AdminLayout = ({ children }) => {
                 {location.pathname === '/admin/dashboard' && 'Dashboard'}
                 {location.pathname === '/admin/products' && 'Product List'}
                 {location.pathname === '/admin/products/add' && 'Add Product'}
+                {location.pathname === '/admin/products/bulk-upload' && 'Bulk Upload Products'}
                 {location.pathname === '/admin/product-panel' && 'Manage Products'}
                 {location.pathname === '/admin/appointments' && 'Appointments'}
-                {location.pathname === '/admin/users' && 'Users'}
+                {location.pathname === '/admin/users' && 'User Management'}
+                {location.pathname === '/admin/orders' && 'Orders'}
+                {location.pathname === '/admin/contacts' && 'Contact Messages'}
                 {location.pathname === '/admin/settings' && 'Settings'}
               </h1>
               <p className="text-gray-600 text-sm mt-1">

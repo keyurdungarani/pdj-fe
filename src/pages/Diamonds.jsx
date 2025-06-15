@@ -113,7 +113,7 @@ const Diamonds = () => {
       const queryString = params.toString() ? `?${params.toString()}` : '';
       
       if (diamondType === 'natural') {
-        const response = await productAPI.getDiamonds();
+        const response = await productAPI.getNaturalDiamonds();
         allProducts = response.data || [];
       } else if (diamondType === 'lab-grown') {
         const response = await productAPI.getLabGrown();
@@ -129,7 +129,8 @@ const Diamonds = () => {
           filteredProducts = filteredProducts.filter(product => 
             product.details?.shape?.toLowerCase() === filters.shape.toLowerCase() ||
             product.diamondSpecs?.shape?.toLowerCase() === filters.shape.toLowerCase() ||
-            product.labGrownSpecs?.shape?.toLowerCase() === filters.shape.toLowerCase()
+            product.labGrownSpecs?.shape?.toLowerCase() === filters.shape.toLowerCase() ||
+            product.naturalDiamondSpecs?.shape?.toLowerCase() === filters.shape.toLowerCase()
           );
         }
         
@@ -137,7 +138,8 @@ const Diamonds = () => {
           filteredProducts = filteredProducts.filter(product =>
             product.details?.cut?.toLowerCase() === filters.cut.toLowerCase() ||
             product.diamondSpecs?.cutGrade?.toLowerCase() === filters.cut.toLowerCase() ||
-            product.labGrownSpecs?.cutGrade?.toLowerCase() === filters.cut.toLowerCase()
+            product.labGrownSpecs?.cutGrade?.toLowerCase() === filters.cut.toLowerCase() ||
+            product.naturalDiamondSpecs?.cutGrade?.toLowerCase() === filters.cut.toLowerCase()
           );
         }
         
@@ -145,7 +147,8 @@ const Diamonds = () => {
           filteredProducts = filteredProducts.filter(product =>
             product.details?.color?.toLowerCase() === filters.color.toLowerCase() ||
             product.diamondSpecs?.color?.toLowerCase() === filters.color.toLowerCase() ||
-            product.labGrownSpecs?.color?.toLowerCase() === filters.color.toLowerCase()
+            product.labGrownSpecs?.color?.toLowerCase() === filters.color.toLowerCase() ||
+            product.naturalDiamondSpecs?.color?.toLowerCase() === filters.color.toLowerCase()
           );
         }
         
@@ -153,7 +156,8 @@ const Diamonds = () => {
           filteredProducts = filteredProducts.filter(product =>
             product.details?.clarity?.toLowerCase() === filters.clarity.toLowerCase() ||
             product.diamondSpecs?.clarity?.toLowerCase() === filters.clarity.toLowerCase() ||
-            product.labGrownSpecs?.clarity?.toLowerCase() === filters.clarity.toLowerCase()
+            product.labGrownSpecs?.clarity?.toLowerCase() === filters.clarity.toLowerCase() ||
+            product.naturalDiamondSpecs?.clarity?.toLowerCase() === filters.clarity.toLowerCase()
           );
         }
         
@@ -165,7 +169,8 @@ const Diamonds = () => {
           filteredProducts = filteredProducts.filter(product => {
             const carat = parseFloat(product.details?.carat) || 
                          parseFloat(product.diamondSpecs?.weight) || 
-                         parseFloat(product.labGrownSpecs?.weight) || 0;
+                         parseFloat(product.labGrownSpecs?.weight) || 
+                         parseFloat(product.naturalDiamondSpecs?.weight) || 0;
             return carat >= minCarat && carat <= maxCarat;
           });
         }
@@ -185,7 +190,8 @@ const Diamonds = () => {
           filteredProducts = filteredProducts.filter(product =>
             product.details?.certification?.toLowerCase() === filters.certification.toLowerCase() ||
             product.diamondSpecs?.lab?.toLowerCase() === filters.certification.toLowerCase() ||
-            product.labGrownSpecs?.lab?.toLowerCase() === filters.certification.toLowerCase()
+            product.labGrownSpecs?.lab?.toLowerCase() === filters.certification.toLowerCase() ||
+            product.naturalDiamondSpecs?.lab?.toLowerCase() === filters.certification.toLowerCase()
           );
         }
         
@@ -196,14 +202,14 @@ const Diamonds = () => {
           filteredProducts.sort((a, b) => (b.price || 0) - (a.price || 0));
         } else if (filters.sortBy === 'carat-asc') {
           filteredProducts.sort((a, b) => {
-            const caratA = parseFloat(a.details?.carat) || parseFloat(a.diamondSpecs?.weight) || parseFloat(a.labGrownSpecs?.weight) || 0;
-            const caratB = parseFloat(b.details?.carat) || parseFloat(b.diamondSpecs?.weight) || parseFloat(b.labGrownSpecs?.weight) || 0;
+            const caratA = parseFloat(a.details?.carat) || parseFloat(a.diamondSpecs?.weight) || parseFloat(a.labGrownSpecs?.weight) || parseFloat(a.naturalDiamondSpecs?.weight) || 0;
+            const caratB = parseFloat(b.details?.carat) || parseFloat(b.diamondSpecs?.weight) || parseFloat(b.labGrownSpecs?.weight) || parseFloat(b.naturalDiamondSpecs?.weight) || 0;
             return caratA - caratB;
           });
         } else if (filters.sortBy === 'carat-desc') {
           filteredProducts.sort((a, b) => {
-            const caratA = parseFloat(a.details?.carat) || parseFloat(a.diamondSpecs?.weight) || parseFloat(a.labGrownSpecs?.weight) || 0;
-            const caratB = parseFloat(b.details?.carat) || parseFloat(b.diamondSpecs?.weight) || parseFloat(b.labGrownSpecs?.weight) || 0;
+            const caratA = parseFloat(a.details?.carat) || parseFloat(a.diamondSpecs?.weight) || parseFloat(a.labGrownSpecs?.weight) || parseFloat(a.naturalDiamondSpecs?.weight) || 0;
+            const caratB = parseFloat(b.details?.carat) || parseFloat(b.diamondSpecs?.weight) || parseFloat(b.labGrownSpecs?.weight) || parseFloat(b.naturalDiamondSpecs?.weight) || 0;
             return caratB - caratA;
           });
         } else if (filters.sortBy === 'latest') {
@@ -331,7 +337,7 @@ const Diamonds = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-20">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-gray-900 to-gray-700 text-white">
         <div className="container mx-auto px-4 pt-24 pb-16">

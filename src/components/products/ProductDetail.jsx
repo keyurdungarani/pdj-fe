@@ -44,8 +44,8 @@ const ProductDetail = ({ product, type = 'jewelry' }) => {
   } = product;
   
   // Format the price with commas
-  const formattedPrice = price?.toLocaleString('en-IN') || '';
-  const formattedSalePrice = salePrice?.toLocaleString('en-IN') || '';
+  const formattedPrice = price?.toLocaleString('en-US') || '';
+  const formattedSalePrice = salePrice?.toLocaleString('en-US') || '';
   
   // Process images to ensure proper URL format
   const processImageUrl = (imagePath) => {
@@ -373,14 +373,14 @@ const ProductDetail = ({ product, type = 'jewelry' }) => {
               <div className="flex items-center mt-2">
                 {onSale && salePrice ? (
                   <>
-                    <span className="text-2xl font-bold text-red-600">₹{formattedSalePrice}</span>
-                    <span className="ml-2 text-lg text-gray-500 line-through">₹{formattedPrice}</span>
+                    <span className="text-2xl font-bold text-red-600">${formattedSalePrice}</span>
+                    <span className="ml-2 text-lg text-gray-500 line-through">${formattedPrice}</span>
                     <span className="ml-2 bg-red-100 text-red-700 text-xs font-medium px-2 py-0.5 rounded">
                       {Math.round(((price - salePrice) / price) * 100)}% OFF
                     </span>
                   </>
                 ) : (
-                  <span className="text-2xl font-bold">₹{formattedPrice}</span>
+                  <span className="text-2xl font-bold">${formattedPrice}</span>
                 )}
               </div>
             </div>

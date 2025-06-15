@@ -19,6 +19,9 @@ import AppointmentsPanel from './pages/admin/AppointmentsPanel';
 import AdminLayout from './components/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AddProduct from './pages/admin/AddProduct';
+import BulkUpload from './pages/admin/BulkUpload';
+import ContactPanel from './pages/admin/ContactPanel';
+import OrderPanel from './pages/admin/OrderPanel';
 
 // Import page components
 import Diamonds from './pages/Diamonds';
@@ -28,7 +31,7 @@ import WhyChooseUs from './pages/WhyChooseUs';
 import BookAppointment from './pages/BookAppointment';
 import Engagement from './pages/Engagement';
 import Wedding from './pages/Wedding';
-import Jewellery from './pages/Jewellery';
+import Jewelry from './pages/Jewelry';
 import Contact from './pages/Contact';
 import ProductDetailPage from './pages/ProductDetailPage';
 
@@ -39,7 +42,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen">
           <Routes>
             {/* Public routes with Navbar and Footer */}
             <Route path="/" element={
@@ -118,11 +121,11 @@ function App() {
                 <Footer />
               </>
             } />
-            <Route path="/jewellery" element={
+            <Route path="/jewelry" element={
               <>
                 <Navbar />
                 <main className="flex-grow">
-                  <Jewellery />
+                  <Jewelry />
                 </main>
                 <Footer />
               </>
@@ -156,11 +159,11 @@ function App() {
             } />
             
             {/* Product detail routes */}
-            <Route path="/jewellery/:id" element={
+            <Route path="/jewelry/:id" element={
               <>
                 <Navbar />
                 <main className="flex-grow">
-                  <ProductDetailPage type="jewellery" />
+                  <ProductDetailPage type="jewelry" />
                 </main>
                 <Footer />
               </>
@@ -240,6 +243,16 @@ function App() {
               } 
             />
             <Route 
+              path='/admin/products/bulk-upload' 
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <BulkUpload />
+                  </AdminLayout>
+                </AdminRoute>
+              } 
+            />
+            <Route 
               path="/admin/product-panel" 
               element={
                 <AdminRoute>
@@ -259,6 +272,26 @@ function App() {
                 </AdminRoute>
               } 
             />
+            <Route 
+              path="/admin/contacts" 
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <ContactPanel />
+                  </AdminLayout>
+                </AdminRoute>
+              } 
+            />
+            <Route 
+              path="/admin/orders" 
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <OrderPanel />
+                  </AdminLayout>
+                </AdminRoute>
+              } 
+            />
             
             {/* Catch all - 404 */}
             <Route path="*" element={
@@ -271,7 +304,7 @@ function App() {
               </>
             } />
           </Routes>
-        </div>
+      </div>
         <ToastContainer position="top-right" autoClose={3000} />
       </AuthProvider>
     </Router>
