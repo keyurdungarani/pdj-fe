@@ -122,7 +122,7 @@ const ConfirmOrderModal = ({
                   )}
                 </div>
               </div>
-
+              
               {/* Status Message */}
               {submitStatus.message && (
                 <div 
@@ -239,14 +239,14 @@ const ConfirmOrderModal = ({
                 </div>
                 
                 <div className="flex gap-3 pt-4">
-                  <button
+                <button
                     type="button"
                     onClick={handleClose}
                     className="flex-1 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
+                >
+                  Cancel
+                </button>
+                <button
                     type="submit"
                     disabled={isSubmitting}
                     className={`flex-1 py-3 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors ${
@@ -254,8 +254,8 @@ const ConfirmOrderModal = ({
                     }`}
                   >
                     {isSubmitting ? 'Placing Order...' : 'Confirm Order'}
-                  </button>
-                </div>
+                </button>
+              </div>
               </form>
             </>
           )}
@@ -265,4 +265,4 @@ const ConfirmOrderModal = ({
   );
 };
 
-export default ConfirmOrderModal;
+export default ConfirmOrderModal; 

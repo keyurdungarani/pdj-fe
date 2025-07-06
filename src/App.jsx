@@ -22,6 +22,7 @@ import AddProduct from './pages/admin/AddProduct';
 import BulkUpload from './pages/admin/BulkUpload';
 import ContactPanel from './pages/admin/ContactPanel';
 import OrderPanel from './pages/admin/OrderPanel';
+import FeaturedImagesPanel from './pages/admin/FeaturedImagesPanel';
 
 // Import page components
 import Diamonds from './pages/Diamonds';
@@ -288,6 +289,16 @@ function App() {
                 <AdminRoute>
                   <AdminLayout>
                     <OrderPanel />
+                  </AdminLayout>
+                </AdminRoute>
+              } 
+            />
+            <Route 
+              path="/admin/home/featured-images" 
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <FeaturedImagesPanel />
                   </AdminLayout>
                 </AdminRoute>
               } 

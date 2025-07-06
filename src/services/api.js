@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Create API instance
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/';
+const API_URL = import.meta.env.VITE_LOCAL_API || 'http://localhost:8081';
 
 // Create axios instance with default config
 const api = axios.create({
@@ -134,10 +134,11 @@ export const adminAPI = {
   register: (data) => api.post('/admin/register', data),
   getProfile: () => api.get('/admin/profile'),
   updateProfile: (data) => api.put('/admin/profile', data),
-  getProductPanel: (type = 'jewelry', limit = 10) => 
-    api.get(`/admin/product-panel?type=${type}&limit=${limit}`),
-  searchProducts: (query, type = 'all') => 
-    api.get(`/admin/product-panel/search?query=${query}&type=${type}`),
+  getProductPanel: (type = 'jewelry', page = 1, limit = 10) => 
+    api.get(`/admin/product-panel?type=${type}&page=${page}&limit=${limit}`),
+  getProductById: (id) => api.get(`/admin/product/${id}`),
+  searchProducts: (query, type = 'all', page = 1, limit = 10) => 
+    api.get(`/admin/product-panel/search?query=${encodeURIComponent(query)}&type=${type}&page=${page}&limit=${limit}`),
   updateProduct: (id, data) => api.put(`/admin/product-panel/product/${id}`, data, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
@@ -145,6 +146,26 @@ export const adminAPI = {
   deleteMultipleProducts: (ids) => api.post('/admin/product-panel/products/delete-multiple', { ids }),
   getDashboardStats: () => api.get('/admin/dashboard/stats'),
   getProductStats: () => api.get('/admin/products/stats'),
+  
+  // Featured Images API methods
+  getFeaturedImages: (page = 1, limit = 10) => 
+    api.get(`/featured-images?page=${page}&limit=${limit}`),
+  getFeaturedImageById: (id) => api.get(`/featured-images/${id}`),
+  createFeaturedImage: (data) => api.post('/featured-images', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  updateFeaturedImage: (id, data) => api.put(`/featured-images/${id}`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  deleteFeaturedImage: (id) => api.delete(`/featured-images/${id}`),
+  reorderFeaturedImages: (imageOrders) => api.put('/featured-images/reorder', { imageOrders }),
+  toggleFeaturedImageStatus: (id) => api.put(`/featured-images/${id}/toggle`),
+  getFeaturedImageStats: () => api.get('/featured-images/stats'),
+};
+
+// API methods for featured images (public)
+export const featuredImagesAPI = {
+  getCurrent: () => api.get('/featured-images/current'),
 };
 
 export default {
@@ -153,5 +174,6 @@ export default {
   orderAPI,
   appointmentAPI,
   contactAPI,
-  adminAPI
+  adminAPI,
+  featuredImagesAPI
 };

@@ -11,13 +11,16 @@ import {
   Menu, 
   X,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Home,
+  Image
 } from 'lucide-react';
 
 const AdminLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [productMenuOpen, setProductMenuOpen] = useState(false);
   const [usersMenuOpen, setUsersMenuOpen] = useState(false);
+  const [homeMenuOpen, setHomeMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -33,6 +36,15 @@ const AdminLayout = ({ children }) => {
       icon: LayoutDashboard,
       path: '/admin/dashboard',
       active: location.pathname === '/admin/dashboard'
+    },
+    {
+      title: 'Home Page',
+      icon: Home,
+      hasSubmenu: true,
+      active: location.pathname.includes('/admin/home'),
+      submenu: [
+        { title: 'Featured Images', path: '/admin/home/featured-images' }
+      ]
     },
     {
       title: 'Products',
@@ -106,6 +118,8 @@ const AdminLayout = ({ children }) => {
                         setProductMenuOpen(!productMenuOpen);
                       } else if (item.title === 'Users') {
                         setUsersMenuOpen(!usersMenuOpen);
+                      } else if (item.title === 'Home Page') {
+                        setHomeMenuOpen(!homeMenuOpen);
                       }
                     }}
                     className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
@@ -117,13 +131,17 @@ const AdminLayout = ({ children }) => {
                       {sidebarOpen && <span className="font-medium">{item.title}</span>}
                     </div>
                     {sidebarOpen && (
-                      ((item.title === 'Products' && productMenuOpen) || (item.title === 'Users' && usersMenuOpen)) 
+                      ((item.title === 'Products' && productMenuOpen) || 
+                       (item.title === 'Users' && usersMenuOpen) || 
+                       (item.title === 'Home Page' && homeMenuOpen)) 
                         ? <ChevronDown size={16} /> 
                         : <ChevronRight size={16} />
                     )}
                   </button>
                   
-                  {((item.title === 'Products' && productMenuOpen) || (item.title === 'Users' && usersMenuOpen)) && sidebarOpen && (
+                  {((item.title === 'Products' && productMenuOpen) || 
+                    (item.title === 'Users' && usersMenuOpen) || 
+                    (item.title === 'Home Page' && homeMenuOpen)) && sidebarOpen && (
                     <div className="ml-6 mt-2 space-y-1">
                       {item.submenu.map((subItem, subIndex) => (
                         <Link
@@ -176,6 +194,7 @@ const AdminLayout = ({ children }) => {
             <div>
               <h1 className="text-2xl font-semibold text-gray-800">
                 {location.pathname === '/admin/dashboard' && 'Dashboard'}
+                {location.pathname === '/admin/home/featured-images' && 'Featured Images'}
                 {location.pathname === '/admin/products' && 'Product List'}
                 {location.pathname === '/admin/products/add' && 'Add Product'}
                 {location.pathname === '/admin/products/bulk-upload' && 'Bulk Upload Products'}

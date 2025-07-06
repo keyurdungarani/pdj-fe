@@ -22,20 +22,24 @@ import {
 import Ring from '../components/icons/Ring';
 import axios from 'axios';
 import ProductCard from '../components/products/ProductCard';
+import DiamondCard from '../components/products/DiamondCard';
+import { featuredImagesAPI } from '../services/api';
 
 const Home = () => {
   const [featuredDiamonds, setFeaturedDiamonds] = useState([]);
   const [featuredJewelry, setFeaturedJewelry] = useState([]);
+  const [featuredImages, setFeaturedImages] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [imagesLoading, setImagesLoading] = useState(true);
 
-  // Hero slider content - More elegant and jewelry-focused
-  const heroSlides = [
+  // Fallback hero slides if no featured images are available
+  const fallbackHeroSlides = [
     {
       image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
       title: 'Timeless Elegance',
       subtitle: 'Discover our exquisite collection of handcrafted jewelry that celebrates life\'s most precious moments',
-      link: '/diamonds',
+      linkUrl: '/diamonds',
       linkText: 'Explore Collection',
       category: 'Premium Diamonds'
     },
@@ -43,7 +47,7 @@ const Home = () => {
       image: 'https://images.unsplash.com/photo-1587467512961-120760940315?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
       title: 'Bespoke Creations',
       subtitle: 'Create your perfect piece with our master craftsmen using the finest materials and traditional techniques',
-      link: '/custom-jewelry',
+      linkUrl: '/custom-jewelry',
       linkText: 'Start Designing',
       category: 'Custom Design'
     },
@@ -51,7 +55,7 @@ const Home = () => {
       image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
       title: 'Love Stories Begin',
       subtitle: 'Find the perfect engagement and wedding rings to mark your journey together',
-      link: '/jewelry',
+      linkUrl: '/jewelry',
       linkText: 'Shop Rings',
       category: 'Engagement & Wedding'
     }
@@ -147,6 +151,43 @@ const Home = () => {
   ];
 
   useEffect(() => {
+    // Fetch featured images for hero slider
+    const fetchFeaturedImages = async () => {
+      setImagesLoading(true);
+      try {
+        const response = await featuredImagesAPI.getCurrent();
+        if (response.data.success && response.data.images) {
+          setFeaturedImages(response.data.images);
+        }
+      } catch (error) {
+        console.error('Error fetching featured images:', error);
+        // Will use fallback slides
+      } finally {
+        setImagesLoading(false);
+      }
+    };
+
+    fetchFeaturedImages();
+  }, []);
+
+  // Get current slides (featured images or fallback)
+  const getCurrentSlides = () => {
+    if (featuredImages.length > 0) {
+      return featuredImages.map(img => ({
+        image: img.imageUrl,
+        title: img.title,
+        subtitle: img.subtitle,
+        linkUrl: img.linkUrl || '/jewelry',
+        linkText: img.linkText || 'Learn More',
+        category: img.category || 'Featured'
+      }));
+    }
+    return fallbackHeroSlides;
+  };
+
+  const heroSlides = getCurrentSlides();
+
+  useEffect(() => {
     // Auto advance hero slider
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev === heroSlides.length - 1 ? 0 : prev + 1));
@@ -166,15 +207,36 @@ const Home = () => {
     // Fetch featured products
     const fetchFeaturedProducts = async () => {
       try {
-        const response = await axios.get('/products?featured=true');
+        // Fetch featured jewelry products
+        const jewelryResponse = await axios.get(`${import.meta.env.VITE_LOCAL_API || 'http://localhost:8081'}/products?featured=true&productType=jewelry&limit=4&sort=-createdAt`);
         
-        if (response.data && response.data.products) {
-          const diamonds = response.data.products.filter(p => p.category === 'diamonds');
-          const jewelry = response.data.products.filter(p => p.category === 'jewelry');
-          
-          setFeaturedDiamonds(diamonds.slice(0, 4) || []);
-          setFeaturedJewelry(jewelry.slice(0, 4) || []);
+        // Fetch featured diamond products (including lab-grown and natural diamonds)
+        const diamondResponse = await axios.get(`${import.meta.env.VITE_LOCAL_API || 'http://localhost:8081'}/products?featured=true&productType=diamond&limit=4&sort=-createdAt`);
+        
+        // Also fetch lab-grown diamonds
+        const labGrownResponse = await axios.get(`${import.meta.env.VITE_LOCAL_API || 'http://localhost:8081'}/products?featured=true&productType=lab-grown&limit=4&sort=-createdAt`);
+        
+        // Also fetch natural diamonds
+        const naturalDiamondResponse = await axios.get(`${import.meta.env.VITE_LOCAL_API || 'http://localhost:8081'}/products?featured=true&productType=natural-diamond&limit=4&sort=-createdAt`);
+        
+        if (jewelryResponse.data && jewelryResponse.data.products) {
+          setFeaturedJewelry(jewelryResponse.data.products || []);
         }
+        
+        // Combine all diamond types and get the last 4
+        const allDiamonds = [
+          ...(diamondResponse.data?.products || []),
+          ...(labGrownResponse.data?.products || []),
+          ...(naturalDiamondResponse.data?.products || [])
+        ];
+        
+        // Sort by creation date (newest first) and take the last 4
+        const sortedDiamonds = allDiamonds
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 4);
+        
+        setFeaturedDiamonds(sortedDiamonds);
+        
       } catch (error) {
         console.error('Error fetching featured products:', error);
         setFeaturedDiamonds([]);
@@ -230,11 +292,11 @@ const Home = () => {
                     {slide.subtitle}
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4">
-                    <Link
-                      to={slide.link}
+                <Link
+                  to={slide.linkUrl}
                       className="inline-flex items-center justify-center px-8 py-4 bg-white text-gray-900 font-semibold rounded-md hover:bg-gray-100 transition-all duration-300 group"
-                    >
-                      {slide.linkText}
+                >
+                  {slide.linkText}
                       <ArrowRight className="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" />
                     </Link>
                     <Link
@@ -242,7 +304,7 @@ const Home = () => {
                       className="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white font-semibold rounded-md hover:bg-white hover:text-gray-900 transition-all duration-300"
                     >
                       Book Consultation
-                    </Link>
+                </Link>
                   </div>
                 </div>
               </div>
@@ -286,7 +348,7 @@ const Home = () => {
               <div key={index} className="text-center group">
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-50 group-hover:bg-primary/10 rounded-full mb-4 transition-colors duration-300">
                   <div className="text-primary group-hover:scale-110 transition-transform duration-300">
-                    {feature.icon}
+                  {feature.icon}
                   </div>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
@@ -309,7 +371,7 @@ const Home = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {categories.map((category, index) => (
-              <Link
+            <Link
                 key={index}
                 to={category.link}
                 className="group relative overflow-hidden rounded-lg aspect-square bg-white shadow-lg hover:shadow-xl transition-all duration-500"
@@ -327,7 +389,7 @@ const Home = () => {
                 <div className="absolute top-4 right-4 w-10 h-10 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <ArrowRight className="w-5 h-5 text-white" />
                 </div>
-              </Link>
+            </Link>
             ))}
           </div>
         </div>
@@ -350,26 +412,26 @@ const Home = () => {
               >
                 <div className="w-12 h-12 mx-auto mb-3 bg-white rounded-full flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
                   <Diamond className="w-6 h-6 text-primary" />
-                </div>
+              </div>
                 <h3 className="text-sm font-medium text-gray-900 group-hover:text-primary transition-colors">
                   {shape.name}
                 </h3>
                 {shape.popular && (
                   <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full"></span>
-                )}
+            )}
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Featured Products */}
+      {/* Featured Jewelry Collection */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-12">
             <div>
-              <h2 className="text-3xl lg:text-4xl font-light text-gray-900 mb-2">Featured Collection</h2>
-              <p className="text-gray-600">Handpicked pieces showcasing exceptional craftsmanship</p>
+              <h2 className="text-3xl lg:text-4xl font-light text-gray-900 mb-2">Featured Jewelry Collection</h2>
+              <p className="text-gray-600">Handpicked jewelry pieces showcasing exceptional craftsmanship</p>
             </div>
             <Link
               to="/jewelry"
@@ -394,7 +456,7 @@ const Home = () => {
                     <div className="h-4 bg-gray-200 rounded mb-2"></div>
                     <div className="h-6 bg-gray-200 rounded"></div>
                   </div>
-                </div>
+              </div>
               ))
             )}
           </div>
@@ -405,6 +467,54 @@ const Home = () => {
               className="inline-flex items-center text-primary hover:text-primary-dark font-medium"
             >
               View All Collection
+              <ArrowRight size={16} className="ml-2" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Diamonds Collection */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center mb-12">
+            <div>
+              <h2 className="text-3xl lg:text-4xl font-light text-gray-900 mb-2">Featured Diamonds Collection</h2>
+              <p className="text-gray-600">Exceptional diamonds with superior cut, clarity, and brilliance</p>
+            </div>
+            <Link
+              to="/diamonds"
+              className="hidden sm:flex items-center text-primary hover:text-primary-dark font-medium group"
+            >
+              View All
+              <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {featuredDiamonds.length > 0 ? (
+              featuredDiamonds.map((item) => (
+                <DiamondCard key={item._id} diamond={item} type="diamonds" />
+              ))
+            ) : (
+              // Placeholder cards
+              Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="bg-white rounded-lg shadow-lg overflow-hidden animate-pulse">
+                  <div className="aspect-square bg-gray-200"></div>
+                  <div className="p-4">
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-6 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="text-center sm:hidden">
+            <Link
+              to="/diamonds"
+              className="inline-flex items-center text-primary hover:text-primary-dark font-medium"
+            >
+              View All Diamonds
               <ArrowRight size={16} className="ml-2" />
             </Link>
           </div>
@@ -501,12 +611,12 @@ const Home = () => {
                 >
                   Start Your Design
                 </Link>
-                <Link
+              <Link
                   to="/book-appointment"
                   className="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white font-semibold rounded-md hover:bg-white/10 transition-colors"
-                >
+              >
                   Book Consultation
-                </Link>
+              </Link>
               </div>
             </div>
             <div className="relative">

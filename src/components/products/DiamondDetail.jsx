@@ -33,7 +33,7 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
     quality: false,
     ethical: false
   });
-
+  
   
   if (!product) return <div className="p-8 text-center">Diamond not found</div>;
   
@@ -324,7 +324,7 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
   const prevImage = () => {
     setSelectedImage((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
   };
-
+  
   const openFullscreen = () => {
     setShowFullscreen(true);
     document.body.style.overflow = 'hidden';
@@ -476,7 +476,7 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                     </span>
                   </div>
                   <h1 className="text-2xl font-bold text-gray-900 mb-2">{name}</h1>
-                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="flex items-center space-x-2 mb-2">
                     {displayCertification && (
                       <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium">
                         {displayCertification} Certified
@@ -495,8 +495,8 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                       >
                         {certificateNumber}
                       </button>
-                      </div>
-                    )}
+                    </div>
+                  )}
                   </div>
                 </div>
                 
@@ -773,7 +773,7 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                     <div className="flex justify-between py-2 border-b border-gray-100">
                       <span className="text-gray-600">Length/Width Ratio:</span>
                       <span className="font-medium text-gray-900">{ratio}</span>
-                    </div>
+                </div>
                   )}
                   
                   {/* Physical Measurements */}
@@ -786,8 +786,8 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                         <div className="flex justify-between py-2 border-b border-gray-100">
                           <span className="text-gray-600">Measurements:</span>
                           <span className="font-medium text-gray-900">{measurements} mm</span>
-                        </div>
-                      )}
+              </div>
+            )}
                       {crownAngle && (
                         <div className="flex justify-between py-2 border-b border-gray-100">
                           <span className="text-gray-600">Crown Angle:</span>
@@ -1086,7 +1086,7 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
           </div>
         </div>
       )}
-
+      
       {/* Confirm Order Modal */}
       <ConfirmOrderModal 
         isOpen={showConfirmModal}
