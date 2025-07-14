@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ShoppingBag } from 'lucide-react';
 import { PLACEHOLDER_IMAGES } from '../../utils/placeholderImage';
-// import Logo from '../../assets/logo.png'; // Make sure to add a logo file
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -10,11 +9,9 @@ const Navbar = () => {
   const location = useLocation();
 
   const navLinks = [
-    // { name: 'ENGAGEMENT', path: '/engagement' },
-    // { name: 'WEDDING', path: '/wedding' },
     { name: 'DIAMONDS', path: '/diamonds' },
     { name: 'JEWELRY', path: '/jewelry' },
-    { name: 'ABOUT US', path: '/why-choose-us' },
+    { name: 'ABOUT US', path: '/about-us' },
     { name: 'CONTACT', path: '/contact' },
   ];
 
@@ -22,6 +19,9 @@ const Navbar = () => {
   const isLinkActive = (linkPath) => {
     return location.pathname === linkPath;
   };
+
+  // Check if we're on the home page
+  const isHomePage = location.pathname === '/';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,25 +40,43 @@ const Navbar = () => {
     setIsMenuOpen(false);
   };
 
+  // Dynamic navbar styling based on page and scroll state
+  const getNavbarClasses = () => {
+    return scrolled 
+      ? 'bg-white shadow-md py-2' 
+      : 'bg-white shadow-sm py-4';
+  };
+
+  // Dynamic text color - always consistent
+  const getTextColor = (isActive = false) => {
+    return isActive ? 'text-primary' : 'text-gray-700 hover:text-primary';
+  };
+
   return (
     <nav 
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        scrolled ? 'bg-white shadow-md py-2' : 'bg-white/95 py-4'
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${getNavbarClasses()}`}
     >
       <div className="container mx-auto px-4 flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="flex-shrink-0">
-          <img 
-            // src={Logo} 
-            alt="PDJ Jewellery" 
-            className="h-10 md:h-12"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = PLACEHOLDER_IMAGES.product;
-            }}
-          />
+          <div className="relative">
+            <h1 
+              className="text-2xl font-medium tracking-wider text-gray-800 hover:text-primary transition-colors duration-300"
+              style={{
+                fontFamily: "'Playfair Display', serif",
+                fontWeight: 500,
+                letterSpacing: '1.5px',
+                color: '#2C2C2C',
+                fontSize: '24px'
+              }}
+            >
+              LOVE & BRILLIANCE
+            </h1>
+            {/* Decorative underline */}
+            <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-amber-400 to-primary opacity-60"></div>
+          </div>
         </Link>
+
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-6">
@@ -66,9 +84,10 @@ const Navbar = () => {
             <div key={link.name} className="relative">
               <Link
                 to={link.path}
-                className={`text-sm font-medium hover:text-primary transition-colors pb-2 ${
-                  isLinkActive(link.path) ? 'text-primary' : 'text-gray-700'
-                }`}
+                className={`text-sm font-medium transition-colors pb-2 ${getTextColor(isLinkActive(link.path))}`}
+                style={{
+                  fontSize: '16px'
+                }}
               >
                 {link.name}
               </Link>
@@ -87,9 +106,6 @@ const Navbar = () => {
           >
             BOOK APPOINTMENT
           </Link>
-          {/* <Link to="/cart" className="text-gray-700 hover:text-primary">
-            <ShoppingBag size={24} />
-          </Link> */}
         </div>
 
         {/* Mobile Menu Button */}
@@ -125,14 +141,14 @@ const Navbar = () => {
               >
                 BOOK APPOINTMENT
               </Link>
-              <Link 
+              {/* <Link 
                 to="/cart" 
                 className="flex items-center space-x-2 px-2 py-2 hover:bg-gray-100 rounded"
                 onClick={closeMenu}
               >
                 <ShoppingBag size={20} />
                 <span className="text-sm font-medium">CART</span>
-              </Link>
+              </Link> */}
             </div>
           </div>
         </div>

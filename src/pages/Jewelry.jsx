@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { productAPI } from '../services/api';
 import ProductCard from '../components/products/ProductCard';
 import JewelryFilters from '../components/jewelry/JewelryFilters';
@@ -16,24 +17,58 @@ import {
 import { PLACEHOLDER_IMAGES } from '../utils/placeholderImage';
 
 const Jewelry = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   
+  // Category mapping: URL parameter values to actual filter values
+  const categoryMapping = {
+    'engagement': 'Engagement Ring',
+    'wedding': 'Wedding Band',
+    'earrings': 'Earrings',
+    'necklace': 'Necklace',
+    'bracelet': 'Bracelet',
+    'pendant': 'Pendant',
+    'tennis-bracelet': 'Tennis Bracelet',
+    'eternity-band': 'Eternity Band',
+    'rings': 'Engagement Ring', // Default rings to engagement rings
+    'jewelry': '', // General jewelry - no specific category filter
+  };
+
+  // Reverse mapping: filter values to URL parameter values
+  const reverseMapping = {
+    'Engagement Ring': 'engagement',
+    'Wedding Band': 'wedding',
+    'Earrings': 'earrings',
+    'Necklace': 'necklace',
+    'Bracelet': 'bracelet',
+    'Pendant': 'pendant',
+    'Tennis Bracelet': 'tennis-bracelet',
+    'Eternity Band': 'eternity-band'
+  };
+
+  // Parse URL parameters and map them to filter values
+  const urlParams = new URLSearchParams(location.search);
+  const urlCategory = urlParams.get('category') || '';
+  const mappedCategory = categoryMapping[urlCategory.toLowerCase()] || urlCategory;
+  
   const [filters, setFilters] = useState({
-    jewelryCategory: '',
-    jewelrySubCategory: '',
-    metal: '',
-    caratRange: '',
-    priceRange: '',
-    jewelryClassification: '',
-    centerStoneType: '',
-    centerStoneShape: '',
-    centerStoneGemType: '',
-    brand: '',
-    sortBy: 'latest'
+    jewelryCategory: mappedCategory,
+    jewelrySubCategory: urlParams.get('subCategory') || '',
+    metal: urlParams.get('metal') || '',
+    caratRange: urlParams.get('caratRange') || '',
+    priceRange: urlParams.get('priceRange') || '',
+    jewelryClassification: urlParams.get('classification') || '',
+    centerStoneType: urlParams.get('stoneType') || '',
+    centerStoneShape: urlParams.get('stoneShape') || '',
+    centerStoneGemType: urlParams.get('gemType') || '',
+    brand: urlParams.get('brand') || '',
+    sortBy: urlParams.get('sortBy') || 'latest'
   });
 
   // Default empty filters for reset
@@ -59,8 +94,47 @@ const Jewelry = () => {
   // Products are already filtered in fetchProducts
   const filteredProducts = products;
 
+  // Update URL when filters change
+  const updateURL = (newFilters) => {
+    const params = new URLSearchParams();
+    
+    // Add non-empty filters to URL
+    Object.entries(newFilters).forEach(([key, value]) => {
+      if (value && value !== '' && value !== 'latest') {
+        // Map internal filter names to URL parameter names
+        const urlParamMap = {
+          jewelryCategory: 'category',
+          jewelrySubCategory: 'subCategory',
+          jewelryClassification: 'classification',
+          centerStoneType: 'stoneType',
+          centerStoneShape: 'stoneShape',
+          centerStoneGemType: 'gemType'
+        };
+        
+        const paramName = urlParamMap[key] || key;
+        let paramValue = value;
+        
+        // Use reverse mapping for category values to make URLs user-friendly
+        if (key === 'jewelryCategory' && reverseMapping[value]) {
+          paramValue = reverseMapping[value];
+        }
+        
+        params.append(paramName, paramValue);
+      }
+    });
+    
+    // Update URL without triggering a page reload
+    const newUrl = params.toString() ? `${location.pathname}?${params.toString()}` : location.pathname;
+    navigate(newUrl, { replace: true });
+  };
+
   useEffect(() => {
     fetchProducts();
+  }, [filters]);
+
+  // Also update URL when filters change
+  useEffect(() => {
+    updateURL(filters);
   }, [filters]);
 
   const fetchProducts = async () => {
@@ -110,7 +184,13 @@ const Jewelry = () => {
       let allProducts = [];
       
       try {
-        const response = await productAPI.getJewelry();
+        // Pass category parameter to backend API
+        const queryParams = new URLSearchParams();
+        if (filters.jewelryCategory) {
+          queryParams.append('category', filters.jewelryCategory);
+        }
+        
+        const response = await productAPI.getJewelry(queryParams.toString());
         allProducts = response.data || [];
       } catch (apiError) {
         console.error('API error:', apiError);
@@ -124,10 +204,28 @@ const Jewelry = () => {
         
         // Apply filters
         if (filters.jewelryCategory) {
-          filteredProducts = filteredProducts.filter(product => 
-            product.jewelrySpecs?.jewelryCategory === filters.jewelryCategory ||
-            product.category?.toLowerCase() === filters.jewelryCategory.toLowerCase()
-          );
+          filteredProducts = filteredProducts.filter(product => {
+            // Check multiple possible category fields and formats
+            const topLevelCategory = product.category?.toLowerCase();
+            const jewelrySpecsCategory = product.jewelrySpecs?.jewelryCategory?.toLowerCase();
+            const jewelrySpecsJewelryCategory = product.jewelrySpecs?.jewelryCategory?.toLowerCase();
+            const filterValue = filters.jewelryCategory.toLowerCase();
+            
+            // Also check for URL-style category names
+            const urlStyleCategory = reverseMapping[filters.jewelryCategory]?.toLowerCase();
+            
+            return topLevelCategory === filterValue || 
+                   topLevelCategory === urlStyleCategory ||
+                   jewelrySpecsCategory === filterValue ||
+                   jewelrySpecsJewelryCategory === filterValue ||
+                   // Handle partial matches for common variations
+                   (filterValue.includes('ring') && topLevelCategory?.includes('ring')) ||
+                   (filterValue.includes('band') && topLevelCategory?.includes('band')) ||
+                   (filterValue.includes('earrings') && topLevelCategory?.includes('earring')) ||
+                   (filterValue.includes('necklace') && topLevelCategory?.includes('necklace')) ||
+                   (filterValue.includes('bracelet') && topLevelCategory?.includes('bracelet')) ||
+                   (filterValue.includes('pendant') && topLevelCategory?.includes('pendant'));
+          });
         }
         
         if (filters.jewelrySubCategory) {
@@ -151,26 +249,25 @@ const Jewelry = () => {
         
         if (filters.centerStoneType) {
           filteredProducts = filteredProducts.filter(product =>
-            product.jewelrySpecs?.centerStone?.type === filters.centerStoneType
+            product.jewelrySpecs?.centerStoneType === filters.centerStoneType
           );
         }
         
         if (filters.centerStoneShape) {
           filteredProducts = filteredProducts.filter(product =>
-            product.jewelrySpecs?.centerStone?.shape === filters.centerStoneShape
+            product.jewelrySpecs?.centerStoneShape === filters.centerStoneShape
           );
         }
         
         if (filters.centerStoneGemType) {
           filteredProducts = filteredProducts.filter(product =>
-            product.jewelrySpecs?.centerStone?.gemType === filters.centerStoneGemType
+            product.jewelrySpecs?.centerStoneGemType === filters.centerStoneGemType
           );
         }
         
         if (filters.brand) {
           filteredProducts = filteredProducts.filter(product =>
-            product.jewelrySpecs?.brand === filters.brand ||
-            product.brand === filters.brand
+            product.brand?.toLowerCase().includes(filters.brand.toLowerCase())
           );
         }
         
@@ -180,8 +277,7 @@ const Jewelry = () => {
           const maxCarat = max ? parseFloat(max) : Infinity;
           
           filteredProducts = filteredProducts.filter(product => {
-            const carat = parseFloat(product.jewelrySpecs?.totalCaratWeight) || 
-                         parseFloat(product.details?.caratWeight) || 0;
+            const carat = parseFloat(product.jewelrySpecs?.totalCaratWeight) || 0;
             return carat >= minCarat && carat <= maxCarat;
           });
         }
@@ -198,326 +294,219 @@ const Jewelry = () => {
         }
         
         // Apply sorting
-        if (filters.sortBy === 'latest') {
-          filteredProducts.sort((a, b) => {
-            // Sort by createdAt (newest first), fallback to _id for deterministic ordering
-            const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
-            const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
-            
-            // If dates are equal, use _id as secondary sort
-            if (dateA.getTime() === dateB.getTime()) {
-              return (b._id || '').localeCompare(a._id || '');
-            }
-            return dateB - dateA;
-          });
-
-        } else if (filters.sortBy === 'price-asc') {
+        if (filters.sortBy === 'price-asc') {
           filteredProducts.sort((a, b) => (a.price || 0) - (b.price || 0));
         } else if (filters.sortBy === 'price-desc') {
           filteredProducts.sort((a, b) => (b.price || 0) - (a.price || 0));
         } else if (filters.sortBy === 'carat-asc') {
           filteredProducts.sort((a, b) => {
-            const caratA = parseFloat(a.jewelrySpecs?.totalCaratWeight) || parseFloat(a.details?.caratWeight) || 0;
-            const caratB = parseFloat(b.jewelrySpecs?.totalCaratWeight) || parseFloat(b.details?.caratWeight) || 0;
+            const caratA = parseFloat(a.jewelrySpecs?.totalCaratWeight) || 0;
+            const caratB = parseFloat(b.jewelrySpecs?.totalCaratWeight) || 0;
             return caratA - caratB;
           });
         } else if (filters.sortBy === 'carat-desc') {
           filteredProducts.sort((a, b) => {
-            const caratA = parseFloat(a.jewelrySpecs?.totalCaratWeight) || parseFloat(a.details?.caratWeight) || 0;
-            const caratB = parseFloat(b.jewelrySpecs?.totalCaratWeight) || parseFloat(b.details?.caratWeight) || 0;
+            const caratA = parseFloat(a.jewelrySpecs?.totalCaratWeight) || 0;
+            const caratB = parseFloat(b.jewelrySpecs?.totalCaratWeight) || 0;
             return caratB - caratA;
           });
+        } else if (filters.sortBy === 'latest') {
+          filteredProducts.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
         }
         
         setProducts(filteredProducts);
       } else {
-        // Generate sample products for development
-        let sampleProducts = generateSampleProducts(12);
-        
-        // Apply sorting to sample products as well
-        if (filters.sortBy === 'latest') {
-          sampleProducts.sort((a, b) => {
-            const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
-            const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
-            if (dateA.getTime() === dateB.getTime()) {
-              return (b._id || '').localeCompare(a._id || '');
-            }
-            return dateB - dateA;
-          });
-        } else if (filters.sortBy === 'price-asc') {
-          sampleProducts.sort((a, b) => (a.price || 0) - (b.price || 0));
-        } else if (filters.sortBy === 'price-desc') {
-          sampleProducts.sort((a, b) => (b.price || 0) - (a.price || 0));
-        }
-        
+        // Generate sample products for development if no real data exists
+        const sampleProducts = generateSampleProducts(12);
         setProducts(sampleProducts);
       }
       
       setError(null);
     } catch (err) {
-      console.error('Error fetching products:', err);
+      console.error('Error fetching jewelry:', err);
       setError('Failed to load jewelry. Please try again later.');
       
-      // Generate sample products for development if everything fails
-      let sampleProducts = generateSampleProducts(12);
-      
-      // Apply sorting to sample products in error case as well
-      if (filters.sortBy === 'latest') {
-        sampleProducts.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
-          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
-          if (dateA.getTime() === dateB.getTime()) {
-            return (b._id || '').localeCompare(a._id || '');
-          }
-          return dateB - dateA;
-        });
-      } else if (filters.sortBy === 'price-asc') {
-        sampleProducts.sort((a, b) => (a.price || 0) - (b.price || 0));
-      } else if (filters.sortBy === 'price-desc') {
-        sampleProducts.sort((a, b) => (b.price || 0) - (a.price || 0));
-      }
-      
+      // Generate sample products for development on error
+      const sampleProducts = generateSampleProducts(12);
       setProducts(sampleProducts);
     } finally {
       setLoading(false);
     }
   };
 
+  // Handle filter changes
   const handleFilterChange = (name, value) => {
     setFilters(prev => ({
       ...prev,
       [name]: value
     }));
   };
-  
+
+  // Clear all filters
   const handleClearAllFilters = () => {
     setFilters(defaultFilters);
   };
-  
-  // Helper function to generate sample products for development
+
   const generateSampleProducts = (count) => {
-    const categories = ['Engagement Ring', 'Wedding Band', 'Earrings', 'Necklace', 'Bracelet', 'Pendant'];
-    const metals = ['14K White Gold', '18K Yellow Gold', '14K Rose Gold', 'Platinum'];
-    const sampleProducts = [];
-    
-    for (let i = 1; i <= count; i++) {
-      const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-      const randomMetal = metals[Math.floor(Math.random() * metals.length)];
-      const randomPrice = Math.floor(Math.random() * 20000) + 500;
-      const hasDiscount = Math.random() > 0.7;
-      const discount = hasDiscount ? Math.floor(Math.random() * 30) + 10 : 0;
-      const originalPrice = hasDiscount ? Math.floor(randomPrice * (100 / (100 - discount))) : randomPrice;
-      
-      // Generate random dates within the last 6 months for realistic "Latest Arrivals" sorting
-      const now = new Date();
-      const sixMonthsAgo = new Date(now.getTime() - (6 * 30 * 24 * 60 * 60 * 1000));
-      const randomDate = new Date(sixMonthsAgo.getTime() + Math.random() * (now.getTime() - sixMonthsAgo.getTime()));
-      
-      sampleProducts.push({
-        _id: `jewelry-sample-${i}`,
-        name: `${randomCategory} ${i}`,
-        price: randomPrice,
-        originalPrice: hasDiscount ? originalPrice : null,
-        discount: hasDiscount ? discount : null,
-        productType: 'jewelry',
-        category: randomCategory,
-        mainImage: PLACEHOLDER_IMAGES.jewelry,
-        galleryImages: [
-          PLACEHOLDER_IMAGES.jewelry,
-          PLACEHOLDER_IMAGES.jewelry,
-        ],
-        isNewArrival: Math.random() > 0.7,
-        createdAt: randomDate.toISOString(), // Add realistic creation date
-        jewelrySpecs: {
-          jewelryCategory: randomCategory,
-          metal: randomMetal,
-          totalCaratWeight: (Math.random() * 3 + 0.5).toFixed(2),
-          centerStone: {
-            type: 'Diamond',
-            shape: 'Round',
-            gemType: 'Diamond'
-          }
-        },
-        details: {
-          material: randomMetal,
-          caratWeight: (Math.random() * 3 + 0.5).toFixed(2)
-        }
-      });
-    }
-    
-    return sampleProducts;
+    return Array.from({ length: count }, (_, index) => ({
+      _id: `sample-${index}`,
+      name: `Sample Jewelry ${index + 1}`,
+      price: Math.floor(Math.random() * 5000) + 500,
+      images: [PLACEHOLDER_IMAGES.product],
+      category: 'Jewelry',
+      jewelrySpecs: {
+        jewelryCategory: ['Engagement Ring', 'Wedding Band', 'Necklace', 'Earrings'][Math.floor(Math.random() * 4)],
+        metal: ['Gold', 'Silver', 'Platinum'][Math.floor(Math.random() * 3)],
+        totalCaratWeight: (Math.random() * 2 + 0.5).toFixed(2)
+      },
+      brand: 'Sample Brand',
+      createdAt: new Date()
+    }));
   };
 
-  // Sort options
-  const sortOptions = [
-    { label: 'Latest Arrivals', value: 'latest' },
-    { label: 'Price: Low to High', value: 'price-asc' },
-    { label: 'Price: High to Low', value: 'price-desc' },
-    { label: 'Carat: Low to High', value: 'carat-asc' },
-    { label: 'Carat: High to Low', value: 'carat-desc' }
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                <GemIcon className="mr-3 text-primary" size={32} />
-                Fine Jewelry Collection
+              <h1 className="text-2xl lg:text-3xl font-light text-gray-900 mb-2">
+                {mappedCategory || 'Jewelry Collection'}
               </h1>
-              <p className="text-gray-600 mt-2">Discover our exquisite collection of handcrafted jewelry</p>
+              <p className="text-gray-600">
+                Discover our exquisite collection of handcrafted jewelry
+              </p>
             </div>
-            
-            {/* Desktop View Controls */}
-            <div className="hidden md:flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <span>{filteredProducts.length} items</span>
-                {activeFilterCount > 0 && (
-                  <span className="text-primary">({activeFilterCount} filters)</span>
-                )}
-              </div>
-              
-              <div className="flex items-center border border-gray-300 rounded-lg">
+            {/* Desktop View Mode Toggle */}
+            <div className="hidden lg:flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-500">View:</span>
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 ${viewMode === 'grid' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                  className={`p-2 rounded ${viewMode === 'grid' ? 'bg-primary text-white' : 'bg-gray-100'}`}
                 >
                   <Grid3X3 size={16} />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 ${viewMode === 'list' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                  className={`p-2 rounded ${viewMode === 'list' ? 'bg-primary text-white' : 'bg-gray-100'}`}
                 >
                   <List size={16} />
                 </button>
               </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center space-x-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors"
+              >
+                <SlidersHorizontal size={16} />
+                <span>Filters</span>
+                {activeFilterCount > 0 && (
+                  <span className="bg-white text-primary text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6">
-        {/* Mobile Filter Button */}
-        <div className="md:hidden mb-4">
-          <div className="flex justify-between items-center">
-            <button
-              onClick={() => setShowMobileFilters(true)}
-              className="flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-            >
-              <Filter size={16} className="mr-2" />
-              Filters
-              {activeFilterCount > 0 && (
-                <span className="ml-2 bg-primary text-white text-xs rounded-full px-2 py-1">
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>
-            
-            <div className="flex items-center space-x-2">
-              <select
-                value={filters.sortBy}
-                onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-              >
-                {sortOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
+      {/* Mobile Filter Button */}
+      <div className="lg:hidden container mx-auto px-4 py-4">
+        <button
+          onClick={() => setShowMobileFilters(true)}
+          className="flex items-center justify-center w-full bg-white border border-gray-300 rounded-lg py-3 px-4 font-medium text-gray-700 hover:bg-gray-50 relative"
+        >
+          <Filter size={20} className="mr-2" />
+          Filters
+          {activeFilterCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-6 h-6 bg-primary text-white text-xs rounded-full flex items-center justify-center font-bold">
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
+      </div>
 
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Desktop Sidebar Filters */}
-          <div className="hidden lg:block w-80 flex-shrink-0">
-            <JewelryFilters
-              filters={filters}
-              onFilterChange={handleFilterChange}
-              onClearFilters={handleClearAllFilters}
-              activeFilterCount={activeFilterCount}
-            />
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Desktop Filters Sidebar */}
+          <div className={`hidden lg:block w-80 flex-shrink-0 transition-all duration-300 ${showFilters ? 'block' : 'hidden'}`}>
+            <div className="sticky top-8">
+              <JewelryFilters
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                onClearFilters={handleClearAllFilters}
+                activeFilterCount={activeFilterCount}
+              />
+            </div>
           </div>
 
           {/* Main Content */}
           <div className="flex-1">
-            {/* Desktop Sort Controls */}
-            <div className="hidden md:flex justify-between items-center mb-6">
+            {/* Results Header */}
+            <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {filteredProducts.length} Jewelry Items
+                <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
+                  {mappedCategory || 'Jewelry Collection'}
                 </h2>
-                {activeFilterCount > 0 && (
-                  <p className="text-sm text-gray-600 mt-1">
-                    {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} applied
-                  </p>
-                )}
+                <p className="text-gray-600 text-sm lg:text-base">
+                  {loading ? 'Loading...' : `${filteredProducts.length} products found`}
+                </p>
               </div>
-              
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 lg:space-x-4">
+                {/* Sort Dropdown */}
                 <select
                   value={filters.sortBy}
                   onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="border border-gray-300 rounded-lg px-2 py-1 lg:px-3 lg:py-2 text-sm lg:text-base focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
-                  {sortOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
+                  <option value="latest">Latest</option>
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="price-desc">Price: High to Low</option>
+                  <option value="carat-asc">Carat: Low to High</option>
+                  <option value="carat-desc">Carat: High to Low</option>
                 </select>
               </div>
             </div>
 
-            {/* Products Display */}
+            {/* Products Grid/List */}
             {loading ? (
-              <div className="flex justify-center items-center py-20">
-                <div className="text-center">
-                  <Loader2 size={40} className="animate-spin text-primary mx-auto mb-4" />
-                  <p className="text-gray-600">Loading jewelry collection...</p>
-                </div>
+              <div className="flex justify-center items-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : error ? (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
-                <h3 className="text-xl font-medium text-red-800 mb-2">Error Loading Jewelry</h3>
-                <p className="text-red-700">{error}</p>
-                <button 
+              <div className="text-center py-12">
+                <p className="text-red-600 mb-4">{error}</p>
+                <button
                   onClick={fetchProducts}
-                  className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
+                  className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-colors"
                 >
                   Try Again
                 </button>
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-8 text-center">
-                <Sparkles size={48} className="text-amber-500 mx-auto mb-4" />
-                <h3 className="text-xl font-medium text-amber-800 mb-2">No Jewelry Found</h3>
-                <p className="text-amber-700 mb-4">
-                  Try adjusting your filters or check back later for new arrivals.
-                </p>
-                {activeFilterCount > 0 && (
-                  <button
-                    onClick={handleClearAllFilters}
-                    className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700"
-                  >
-                    Clear All Filters
-                  </button>
-                )}
+              <div className="text-center py-12">
+                <GemIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+                <p className="text-gray-500 mb-4">Try adjusting your filters or search criteria</p>
+                <button
+                  onClick={handleClearAllFilters}
+                  className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-colors"
+                >
+                  Clear All Filters
+                </button>
               </div>
             ) : (
-              <div className={
+              <div className={`grid gap-4 lg:gap-6 ${
                 viewMode === 'grid' 
-                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                  : "space-y-4"
-              }>
+                  ? 'grid-cols-2 lg:grid-cols-3' 
+                  : 'grid-cols-1'
+              }`}>
                 {filteredProducts.map((product) => (
-                  <ProductCard 
-                    key={product._id} 
-                    product={product} 
+                  <ProductCard
+                    key={product._id}
+                    product={product}
                     type="jewelry"
                     viewMode={viewMode}
                   />
@@ -526,42 +515,41 @@ const Jewelry = () => {
             )}
           </div>
         </div>
-      </div>
 
-      {/* Mobile Filter Modal */}
-      {showMobileFilters && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden">
-          <div className="fixed inset-y-0 left-0 w-full max-w-sm bg-white overflow-y-auto">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
-              <button
-                onClick={() => setShowMobileFilters(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            
-            <div className="p-4">
-              <JewelryFilters
-                filters={filters}
-                onFilterChange={handleFilterChange}
-                onClearFilters={handleClearAllFilters}
-                activeFilterCount={activeFilterCount}
-              />
-            </div>
-            
-            <div className="p-4 border-t border-gray-200">
-              <button
-                onClick={() => setShowMobileFilters(false)}
-                className="w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark"
-              >
-                Apply Filters ({filteredProducts.length} items)
-              </button>
+        {/* Mobile Filters Modal */}
+        {showMobileFilters && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowMobileFilters(false)} />
+            <div className="fixed inset-y-0 left-0 w-full max-w-sm bg-white shadow-xl">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900">Filter Jewelry</h2>
+                <button
+                  onClick={() => setShowMobileFilters(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-4 overflow-y-auto h-full pb-20">
+                <JewelryFilters
+                  filters={filters}
+                  onFilterChange={handleFilterChange}
+                  onClearFilters={handleClearAllFilters}
+                  activeFilterCount={activeFilterCount}
+                />
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200">
+                <button
+                  onClick={() => setShowMobileFilters(false)}
+                  className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors"
+                >
+                  Apply Filters
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

@@ -62,7 +62,7 @@ const AdminLogin = () => {
         });
         
         toast.success('Admin login successful!');
-        navigate('/admin/products');
+        navigate('/admin/dashboard');
       } catch (error) {
         console.error('Login error:', error);
         

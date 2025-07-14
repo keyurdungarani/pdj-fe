@@ -633,7 +633,7 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                     }`}
                   >
                     <ShoppingBag size={18} />
-                    Place Order
+                    Confirm Order
                   </button>
                   
                   {/* <button 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { productAPI } from '../services/api';
 import DiamondCard from '../components/products/DiamondCard';
 import DiamondFilters from '../components/diamonds/DiamondFilters';
@@ -17,22 +18,34 @@ import {
 import { PLACEHOLDER_IMAGES } from '../utils/placeholderImage';
 
 const Diamonds = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   const [diamondType, setDiamondType] = useState('lab-grown'); // 'natural', 'lab-grown' - default to lab-grown
   
+  // Parse URL parameters
+  const urlParams = new URLSearchParams(location.search);
+  
+  // Helper function to normalize shape name (capitalize first letter)
+  const normalizeShape = (shape) => {
+    if (!shape) return '';
+    return shape.charAt(0).toUpperCase() + shape.slice(1).toLowerCase();
+  };
+  
   const [filters, setFilters] = useState({
-    shape: '',
-    cut: '',
-    color: '',
-    clarity: '',
-    caratRange: '',
-    priceRange: '',
-    certification: '',
-    sortBy: 'latest'
+    shape: normalizeShape(urlParams.get('shape')) || '',
+    cut: urlParams.get('cut') || '',
+    color: urlParams.get('color') || '',
+    clarity: urlParams.get('clarity') || '',
+    caratRange: urlParams.get('caratRange') || '',
+    priceRange: urlParams.get('priceRange') || '',
+    certification: urlParams.get('certification') || '',
+    sortBy: urlParams.get('sortBy') || 'latest'
   });
 
   // Default empty filters for reset
@@ -55,9 +68,32 @@ const Diamonds = () => {
   // Products are already filtered in fetchProducts
   const filteredProducts = products;
 
+  // Update URL when filters change
+  const updateURL = (newFilters) => {
+    const params = new URLSearchParams();
+    
+    // Add non-empty filters to URL
+    Object.entries(newFilters).forEach(([key, value]) => {
+      if (value && value !== '' && value !== 'latest') {
+        // Convert shape to lowercase for consistent URLs
+        const urlValue = key === 'shape' ? value.toLowerCase() : value;
+        params.append(key, urlValue);
+      }
+    });
+    
+    // Update URL without triggering a page reload
+    const newUrl = params.toString() ? `${location.pathname}?${params.toString()}` : location.pathname;
+    navigate(newUrl, { replace: true });
+  };
+
   useEffect(() => {
     fetchProducts();
   }, [filters, diamondType]);
+
+  // Also update URL when filters change
+  useEffect(() => {
+    updateURL(filters);
+  }, [filters]);
 
   const fetchProducts = async () => {
     try {
@@ -337,7 +373,7 @@ const Diamonds = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
+    <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-gray-900 to-gray-700 text-white">
         <div className="container mx-auto px-4 pt-24 pb-16">
@@ -394,10 +430,15 @@ const Diamonds = () => {
         <div className="lg:hidden mb-4">
           <button
             onClick={() => setShowMobileFilters(true)}
-            className="flex items-center justify-center w-full bg-white border border-gray-300 rounded-lg py-3 px-4 font-medium text-gray-700 hover:bg-gray-50"
+            className="flex items-center justify-center w-full bg-white border border-gray-300 rounded-lg py-3 px-4 font-medium text-gray-700 hover:bg-gray-50 relative"
           >
             <Filter size={20} className="mr-2" />
-            Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
+            Filters
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-6 h-6 bg-primary text-white text-xs rounded-full flex items-center justify-center font-bold">
+                {activeFilterCount}
+              </span>
+            )}
           </button>
         </div>
 
@@ -417,62 +458,67 @@ const Diamonds = () => {
           {/* Main Content */}
           <div className="flex-1">
             {/* Results Header */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {loading ? 'Loading...' : `${filteredProducts.length} diamonds found`}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Showing {diamondType === 'natural' ? 'Natural' : 'Lab-Grown'} diamonds
-                  </p>
-                </div>
-                
-                <div className="flex items-center gap-4">
-                  {/* Sort Dropdown */}
-                  <select
-                    value={filters.sortBy}
-                    onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
+                  {diamondType === 'lab-grown' ? 'Lab-Grown' : 'Natural'} Diamonds
+                </h2>
+                <p className="text-gray-600 text-sm lg:text-base">
+                  {loading ? 'Loading...' : `${filteredProducts.length} diamonds found`}
+                </p>
+              </div>
+              <div className="flex items-center space-x-2 lg:space-x-4">
+                {/* Desktop View Mode Toggle */}
+                <div className="hidden lg:flex items-center space-x-2">
+                  <span className="text-sm text-gray-500">View:</span>
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded ${viewMode === 'grid' ? 'bg-primary text-white' : 'bg-gray-100'}`}
                   >
-                    <option value="latest">Latest Arrivals</option>
-                    <option value="price-asc">Price: Low to High</option>
-                    <option value="price-desc">Price: High to Low</option>
-                    <option value="carat-asc">Carat: Low to High</option>
-                    <option value="carat-desc">Carat: High to Low</option>
-                  </select>
-                  
-                  {/* View Mode Toggle */}
-                  <div className="flex border border-gray-300 rounded-lg overflow-hidden">
-                    <button
-                      onClick={() => setViewMode('grid')}
-                      className={`p-2 ${viewMode === 'grid' ? 'bg-primary text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
-                    >
-                      <Grid3X3 size={18} />
-                    </button>
-                    <button
-                      onClick={() => setViewMode('list')}
-                      className={`p-2 ${viewMode === 'list' ? 'bg-primary text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
-                    >
-                      <List size={18} />
-                    </button>
-                  </div>
+                    <Grid3X3 size={16} />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-primary text-white' : 'bg-gray-100'}`}
+                  >
+                    <List size={16} />
+                  </button>
                 </div>
+                {/* Sort Dropdown */}
+                <select
+                  value={filters.sortBy}
+                  onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                  className="border border-gray-300 rounded-lg px-2 py-1 lg:px-3 lg:py-2 text-sm lg:text-base focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                  <option value="latest">Latest</option>
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="price-desc">Price: High to Low</option>
+                  <option value="carat-asc">Carat: Low to High</option>
+                  <option value="carat-desc">Carat: High to Low</option>
+                </select>
               </div>
             </div>
 
-            {/* Products Display */}
+            {/* Products Grid */}
             {loading ? (
-              <div className="flex justify-center items-center py-20">
-                <Loader2 size={40} className="animate-spin text-primary" />
+              <div className="flex justify-center items-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : error ? (
+              <div className="text-center py-12">
+                <p className="text-red-600 mb-4">{error}</p>
+                <button
+                  onClick={fetchProducts}
+                  className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-colors"
+                >
+                  Try Again
+                </button>
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-                <DiamondIcon size={48} className="text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-medium text-gray-900 mb-2">No Diamonds Found</h3>
-                <p className="text-gray-600 mb-4">
-                  Try adjusting your filters or browse our full collection.
-                </p>
+              <div className="text-center py-12">
+                <DiamondIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No diamonds found</h3>
+                <p className="text-gray-500 mb-4">Try adjusting your filters or search criteria</p>
                 <button
                   onClick={handleClearAllFilters}
                   className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-colors"
@@ -481,15 +527,17 @@ const Diamonds = () => {
                 </button>
               </div>
             ) : (
-              <div className={viewMode === 'grid' 
-                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' 
-                : 'space-y-4'
-              }>
-                {filteredProducts.map((product) => (
-                  <DiamondCard 
-                    key={product._id} 
-                    diamond={product} 
-                    type="diamonds" 
+              <div className={`grid gap-4 lg:gap-6 ${
+                viewMode === 'grid' 
+                  ? 'grid-cols-2 lg:grid-cols-3' 
+                  : 'grid-cols-1'
+              }`}>
+                {filteredProducts.map((diamond) => (
+                  <DiamondCard
+                    key={diamond._id}
+                    diamond={diamond}
+                    type="diamonds"
+                    viewMode={viewMode}
                   />
                 ))}
               </div>

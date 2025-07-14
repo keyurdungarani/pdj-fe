@@ -23,6 +23,8 @@ import BulkUpload from './pages/admin/BulkUpload';
 import ContactPanel from './pages/admin/ContactPanel';
 import OrderPanel from './pages/admin/OrderPanel';
 import FeaturedImagesPanel from './pages/admin/FeaturedImagesPanel';
+import ShopCategoryPanel from './pages/admin/ShopCategoryPanel';
+import CustomerReviewsPanel from './pages/admin/CustomerReviewsPanel';
 
 // Import page components
 import Diamonds from './pages/Diamonds';
@@ -49,7 +51,7 @@ function App() {
             <Route path="/" element={
               <>
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-20">
                   <Home />
                 </main>
                 <Footer />
@@ -58,7 +60,7 @@ function App() {
             <Route path="/login" element={
               <>
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-20">
                   <Login />
                 </main>
                 <Footer />
@@ -67,7 +69,7 @@ function App() {
             <Route path="/register" element={
               <>
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-20">
                   <Register />
                 </main>
                 <Footer />
@@ -78,7 +80,7 @@ function App() {
             <Route path="/forgot-password" element={
               <>
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-20">
                   <ForgotPassword />
                 </main>
                 <Footer />
@@ -87,7 +89,7 @@ function App() {
             <Route path="/reset-password/:token" element={
               <>
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-20">
                   <ResetPassword />
                 </main>
                 <Footer />
@@ -98,7 +100,7 @@ function App() {
             <Route path="/engagement" element={
               <>
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-20">
                   <Engagement />
                 </main>
                 <Footer />
@@ -107,7 +109,7 @@ function App() {
             <Route path="/wedding" element={
               <>
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-20">
                   <Wedding />
                 </main>
                 <Footer />
@@ -116,7 +118,7 @@ function App() {
             <Route path="/diamonds" element={
               <>
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-20">
                   <Diamonds />
                 </main>
                 <Footer />
@@ -125,16 +127,16 @@ function App() {
             <Route path="/jewelry" element={
               <>
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-20">
                   <Jewelry />
                 </main>
                 <Footer />
               </>
             } />
-            <Route path="/why-choose-us" element={
+            <Route path="/about-us" element={
               <>
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-20">
                   <WhyChooseUs />
                 </main>
                 <Footer />
@@ -143,7 +145,7 @@ function App() {
             <Route path="/contact" element={
               <>
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-20">
                   <Contact />
                 </main>
                 <Footer />
@@ -152,7 +154,7 @@ function App() {
             <Route path="/book-appointment" element={
               <>
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-20">
                   <BookAppointment />
                 </main>
                 <Footer />
@@ -163,7 +165,7 @@ function App() {
             <Route path="/jewelry/:id" element={
               <>
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-20">
                   <ProductDetailPage type="jewelry" />
                 </main>
                 <Footer />
@@ -172,7 +174,7 @@ function App() {
             <Route path="/diamonds/:id" element={
               <>
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-20">
                   <ProductDetailPage type="diamonds" />
                 </main>
                 <Footer />
@@ -181,7 +183,7 @@ function App() {
             <Route path="/rings/:id" element={
               <>
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-20">
                   <ProductDetailPage type="ring" />
                 </main>
                 <Footer />
@@ -190,7 +192,7 @@ function App() {
             <Route path="/engagement/:id" element={
               <>
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-20">
                   <ProductDetailPage type="engagement" />
                 </main>
                 <Footer />
@@ -199,7 +201,7 @@ function App() {
             <Route path="/wedding/:id" element={
               <>
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-20">
                   <ProductDetailPage type="wedding" />
                 </main>
                 <Footer />
@@ -299,6 +301,26 @@ function App() {
                 <AdminRoute>
                   <AdminLayout>
                     <FeaturedImagesPanel />
+                  </AdminLayout>
+                </AdminRoute>
+              } 
+            />
+            <Route 
+              path="/admin/home/shop-categories" 
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <ShopCategoryPanel />
+                  </AdminLayout>
+                </AdminRoute>
+              } 
+            />
+            <Route 
+              path="/admin/products/customer-reviews" 
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <CustomerReviewsPanel />
                   </AdminLayout>
                 </AdminRoute>
               } 

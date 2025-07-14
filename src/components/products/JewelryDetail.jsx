@@ -278,13 +278,6 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
                   
                   <button 
                     className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
-                    title="360° View"
-                  >
-                    <RotateCw size={20} className="text-gray-700" />
-                  </button>
-                  
-                  <button 
-                    className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
                     title="Video Available"
                   >
                     <Eye size={20} className="text-gray-700" />
@@ -466,7 +459,7 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
                     }`}
                   >
                     <ShoppingBag size={18} />
-                    Place Order
+                    Confirm Order
                   </button>
                   
                   {/* <button 

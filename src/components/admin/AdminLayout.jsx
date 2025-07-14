@@ -43,7 +43,8 @@ const AdminLayout = ({ children }) => {
       hasSubmenu: true,
       active: location.pathname.includes('/admin/home'),
       submenu: [
-        { title: 'Featured Images', path: '/admin/home/featured-images' }
+        { title: 'Featured Images', path: '/admin/home/featured-images' },
+        { title: 'Shop Categories', path: '/admin/home/shop-categories' }
       ]
     },
     {
@@ -54,7 +55,8 @@ const AdminLayout = ({ children }) => {
       submenu: [
         { title: 'Add Product', path: '/admin/products/add' },
         { title: 'Bulk Uploads', path: '/admin/products/bulk-upload' },
-        { title: 'Manage Products', path: '/admin/product-panel' }
+        { title: 'Manage Products', path: '/admin/product-panel' },
+        { title: 'Customer Reviews', path: '/admin/products/customer-reviews' }
       ]
     },
     {
@@ -148,9 +150,9 @@ const AdminLayout = ({ children }) => {
                           key={subIndex}
                           to={subItem.path}
                           className={`block p-2 rounded-lg text-sm transition-colors ${
-                            location.pathname === subItem.path
-                              ? 'bg-primary/10 text-primary font-medium'
-                              : 'text-gray-600 hover:bg-gray-100'
+                            location.pathname === subItem.path 
+                              ? 'bg-primary/10 text-primary font-medium' 
+                              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                           }`}
                         >
                           {subItem.title}
@@ -174,7 +176,7 @@ const AdminLayout = ({ children }) => {
           ))}
         </nav>
 
-        {/* Footer */}
+        {/* Logout Button */}
         <div className="p-4 border-t border-gray-200">
           <button
             onClick={handleLogout}
@@ -187,43 +189,28 @@ const AdminLayout = ({ children }) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <header className="bg-white shadow-sm border-b border-gray-200 p-4">
+        <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-800">
-                {location.pathname === '/admin/dashboard' && 'Dashboard'}
-                {location.pathname === '/admin/home/featured-images' && 'Featured Images'}
-                {location.pathname === '/admin/products' && 'Product List'}
-                {location.pathname === '/admin/products/add' && 'Add Product'}
-                {location.pathname === '/admin/products/bulk-upload' && 'Bulk Upload Products'}
-                {location.pathname === '/admin/product-panel' && 'Manage Products'}
-                {location.pathname === '/admin/appointments' && 'Appointments'}
-                {location.pathname === '/admin/users' && 'User Management'}
-                {location.pathname === '/admin/orders' && 'Orders'}
-                {location.pathname === '/admin/contacts' && 'Contact Messages'}
-                {location.pathname === '/admin/settings' && 'Settings'}
-              </h1>
-              <p className="text-gray-600 text-sm mt-1">
-                Manage your jewelry store from here
-              </p>
-            </div>
-            
+            <h1 className="text-xl font-semibold text-gray-800">
+              {location.pathname === '/admin/dashboard' && 'Dashboard'}
+              {location.pathname.includes('/admin/home') && 'Home Page Management'}
+              {location.pathname.includes('/admin/product') && 'Product Management'}
+              {location.pathname === '/admin/appointments' && 'Appointments'}
+              {location.pathname.includes('/admin/users') && 'User Management'}
+              {location.pathname.includes('/admin/contacts') && 'Contact Management'}
+              {location.pathname.includes('/admin/orders') && 'Order Management'}
+              {location.pathname === '/admin/settings' && 'Settings'}
+            </h1>
             <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-800">Admin User</p>
-                <p className="text-xs text-gray-500">Administrator</p>
-              </div>
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-white font-medium text-sm">A</span>
-              </div>
+              <span className="text-sm text-gray-600">Welcome, Admin</span>
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 overflow-y-auto p-6">
           {children}
         </main>
       </div>
@@ -231,4 +218,4 @@ const AdminLayout = ({ children }) => {
   );
 };
 
-export default AdminLayout; 
+export default AdminLayout;

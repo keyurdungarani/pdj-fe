@@ -81,7 +81,7 @@ export const productAPI = {
   getDiamonds: () => api.get('/products/type/diamonds'),
   getNaturalDiamonds: () => api.get('/products/type/natural-diamonds'),
   getRings: () => api.get('/products/type/rings'),
-  getJewelry: () => api.get('/products/type/jewelry'),
+  getJewelry: (query = '') => api.get(`/products/type/jewelry${query ? `?${query}` : ''}`),
   bulkUpload: (data, config) => api.post('/products/bulk-upload', data, {
     headers: { 'Content-Type': 'multipart/form-data' },
     ...config
@@ -161,11 +161,50 @@ export const adminAPI = {
   reorderFeaturedImages: (imageOrders) => api.put('/featured-images/reorder', { imageOrders }),
   toggleFeaturedImageStatus: (id) => api.put(`/featured-images/${id}/toggle`),
   getFeaturedImageStats: () => api.get('/featured-images/stats'),
+
+  // Shop Categories API methods
+  getShopCategories: (page = 1, limit = 10) => 
+    api.get(`/shop-categories?page=${page}&limit=${limit}`),
+  getShopCategoryById: (id) => api.get(`/shop-categories/${id}`),
+  createShopCategory: (data) => api.post('/shop-categories', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  updateShopCategory: (id, data) => api.put(`/shop-categories/${id}`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  deleteShopCategory: (id) => api.delete(`/shop-categories/${id}`),
+  reorderShopCategories: (categoryOrders) => api.put('/shop-categories/reorder', { categoryOrders }),
+  toggleShopCategoryStatus: (id) => api.put(`/shop-categories/${id}/toggle`),
+  getShopCategoryStats: () => api.get('/shop-categories/stats'),
 };
 
 // API methods for featured images (public)
 export const featuredImagesAPI = {
   getCurrent: () => api.get('/featured-images/current'),
+};
+
+// API methods for shop categories (public)
+export const shopCategoriesAPI = {
+  getActive: () => api.get('/shop-categories/active'),
+};
+
+// API methods for customer reviews (public)
+export const customerReviewsAPI = {
+  getActive: (limit = 10, featured = false) => 
+    api.get(`/customer-reviews/active?limit=${limit}&featured=${featured}`),
+};
+
+// API methods for admin - customer reviews
+export const customerReviewsAdminAPI = {
+  getAll: (query = '') => api.get(`/customer-reviews${query}`),
+  getById: (id) => api.get(`/customer-reviews/${id}`),
+  create: (data) => api.post('/customer-reviews', data),
+  update: (id, data) => api.put(`/customer-reviews/${id}`, data),
+  delete: (id) => api.delete(`/customer-reviews/${id}`),
+  toggleStatus: (id) => api.patch(`/customer-reviews/${id}/toggle-status`),
+  toggleFeatured: (id) => api.patch(`/customer-reviews/${id}/toggle-featured`),
+  updateDisplayOrder: (reviews) => api.patch('/customer-reviews/bulk/display-order', { reviews }),
+  getStats: () => api.get('/customer-reviews/stats'),
 };
 
 export default {
@@ -175,5 +214,8 @@ export default {
   appointmentAPI,
   contactAPI,
   adminAPI,
-  featuredImagesAPI
+  featuredImagesAPI,
+  shopCategoriesAPI,
+  customerReviewsAPI,
+  customerReviewsAdminAPI
 };

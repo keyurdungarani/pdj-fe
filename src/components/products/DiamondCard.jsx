@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Heart, Eye, ShoppingCart, Award, Star } from 'lucide-react';
 import { DEFAULT_PLACEHOLDER, PLACEHOLDER_IMAGES } from '../../utils/placeholderImage';
 
-const DiamondCard = ({ diamond, type = 'diamonds' }) => {
+const DiamondCard = ({ diamond, type = 'diamonds', viewMode = 'grid' }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
@@ -200,41 +200,36 @@ const DiamondCard = ({ diamond, type = 'diamonds' }) => {
             </div>
           )}
           {certification && (
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between">
               <span className="text-gray-600">Cert:</span>
-              <span className="font-medium flex items-center">
-                <Award size={10} className="mr-1" />
-                {certification}
-              </span>
+              <span className="font-medium">{certification}</span>
             </div>
           )}
         </div>
 
         {/* Price */}
-        <div className="mt-4 pt-3 border-t border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="text-lg font-bold text-gray-900">${formattedPrice}</span>
-                {originalPrice && originalPrice > price && (
-                  <span className="text-sm text-gray-500 line-through">${formattedOriginalPrice}</span>
-                )}
-              </div>
-              {discount && discount > 0 && (
-                <span className="text-xs text-green-600 font-medium">Save {discount}%</span>
+        <div className="mt-4 flex items-center justify-between">
+          <div>
+            <div className="flex items-center space-x-2">
+              <span className="text-lg font-bold text-gray-900">${formattedPrice}</span>
+              {originalPrice && originalPrice > price && (
+                <span className="text-sm text-gray-500 line-through">${formattedOriginalPrice}</span>
               )}
             </div>
-            
-            {/* Quick action buttons */}
-            <div className="flex space-x-1">
-              <Link
-                to={`/${type}/${_id}`}
-                className="bg-primary text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-primary-dark transition-colors"
-              >
-                View Details
-              </Link>
-            </div>
+            {discount && discount > 0 && (
+              <span className="text-sm text-green-600 font-medium">{discount}% off</span>
+            )}
           </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="mt-4 flex space-x-2">
+          <Link
+            to={`/${type}/${_id}`}
+            className="flex-1 bg-primary text-white text-center py-2 px-4 rounded-lg hover:bg-primary-dark transition-colors text-sm font-medium"
+          >
+            View Details
+          </Link>
         </div>
       </div>
     </div>

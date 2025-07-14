@@ -4,7 +4,7 @@ import { Heart, Search, ShoppingCart } from 'lucide-react';
 import ConfirmOrderModal from '../common/ConfirmOrderModal';
 import { PLACEHOLDER_IMAGES } from '../../utils/placeholderImage';
 
-const ProductCard = ({ product, type = 'jewelry' }) => {
+const ProductCard = ({ product, type = 'jewelry', viewMode = 'grid' }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);

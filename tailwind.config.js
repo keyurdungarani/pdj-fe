@@ -5,6 +5,22 @@ export default {
     content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
   	extend: {
+      fontFamily: {
+        // Logo / Brand Name fonts (High-contrast serifs)
+        'playfair': ['Playfair Display', 'serif'],
+        'bodoni': ['Libre Bodoni', 'serif'],
+        
+        // Subheads / Navigation fonts
+        'baskerville': ['Libre Baskerville', 'serif'],
+        
+        // Body / UI Text fonts (Clean sans-serifs)
+        'montserrat': ['Montserrat', 'sans-serif'],
+        'lato': ['Lato', 'sans-serif'],
+        
+        // Default sans-serif stack
+        'sans': ['Montserrat', 'system-ui', 'sans-serif'],
+        'serif': ['Libre Baskerville', 'serif'],
+      },
   		colors: {
   			primary: {
   				DEFAULT: 'hsl(var(--primary))',

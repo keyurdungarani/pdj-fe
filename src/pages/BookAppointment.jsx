@@ -126,7 +126,7 @@ const BookAppointment = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
           <div className="bg-primary/90 text-white p-6">
-            <h1 className="text-3xl font-bold">Book Your Consultation</h1>
+            <h1 className="text-3xl font-bold">Book Your Virtual Consultation</h1>
             <p className="mt-2 opacity-90">Our experts are ready to help you find the perfect piece.</p>
           </div>
 
@@ -345,7 +345,7 @@ const BookAppointment = () => {
                   isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
                 }`}
               >
-                {isSubmitting ? 'Booking...' : 'Book Appointment'}
+                {isSubmitting ? 'Booking...' : 'Book Virtual Appointment'}
               </button>
             </div>
           </form>

@@ -56,11 +56,10 @@ function Footer() {
               <ul className="space-y-2">
                 <li><a href="/diamonds" className="text-gray-300 hover:text-primary text-sm transition-colors">Natural Diamonds</a></li>
                 <li><a href="/diamonds" className="text-gray-300 hover:text-primary text-sm transition-colors">Lab-Grown Diamonds</a></li>
-                <li><a href="/jewelry" className="text-gray-300 hover:text-primary text-sm transition-colors">Engagement Rings</a></li>
-                <li><a href="/jewelry" className="text-gray-300 hover:text-primary text-sm transition-colors">Wedding Rings</a></li>
-                <li><a href="/jewelry" className="text-gray-300 hover:text-primary text-sm transition-colors">Diamond Earrings</a></li>
-                <li><a href="/jewelry" className="text-gray-300 hover:text-primary text-sm transition-colors">Diamond Pendants</a></li>
-                <li><a href="/jewelry" className="text-gray-300 hover:text-primary text-sm transition-colors">Custom Jewelry</a></li>
+                <li><a href="/jewelry?category=engagement" className="text-gray-300 hover:text-primary text-sm transition-colors">Engagement Rings</a></li>
+                <li><a href="/jewelry?category=wedding" className="text-gray-300 hover:text-primary text-sm transition-colors">Wedding Rings</a></li>
+                <li><a href="/jewelry?category=earrings" className="text-gray-300 hover:text-primary text-sm transition-colors">Diamond Earrings</a></li>
+                <li><a href="/jewelry?category=pendant" className="text-gray-300 hover:text-primary text-sm transition-colors">Diamond Pendants</a></li>
                 <li><a href="/book-appointment" className="text-gray-300 hover:text-primary text-sm transition-colors">Book Consultation</a></li>
               </ul>
             </div>
@@ -69,14 +68,13 @@ function Footer() {
             <div>
               <h3 className="text-lg font-semibold text-white mb-4">Support</h3>
               <ul className="space-y-2">
-                <li><a href="/about" className="text-gray-300 hover:text-primary text-sm transition-colors">About Us</a></li>
+                <li><a href="/about-us" className="text-gray-300 hover:text-primary text-sm transition-colors">About Us</a></li>
                 <li><a href="/contact" className="text-gray-300 hover:text-primary text-sm transition-colors">Contact Us</a></li>
-                <li><a href="#" className="text-gray-300 hover:text-primary text-sm transition-colors">Size Guide</a></li>
-                <li><a href="#" className="text-gray-300 hover:text-primary text-sm transition-colors">Care Instructions</a></li>
-                <li><a href="#" className="text-gray-300 hover:text-primary text-sm transition-colors">Returns & Exchanges</a></li>
-                <li><a href="#" className="text-gray-300 hover:text-primary text-sm transition-colors">Shipping Info</a></li>
-                <li><a href="#" className="text-gray-300 hover:text-primary text-sm transition-colors">FAQ</a></li>
-                <li><a href="#" className="text-gray-300 hover:text-primary text-sm transition-colors">Privacy Policy</a></li>
+                {/* <li><a href="#" className="text-gray-300 hover:text-primary text-sm transition-colors">Care Instructions</a></li> */}
+                <li><a href="/contact" className="text-gray-300 hover:text-primary text-sm transition-colors">Returns & Exchanges</a></li>
+                <li><a href="/contact" className="text-gray-300 hover:text-primary text-sm transition-colors">Shipping Info</a></li>
+                {/* <li><a href="#" className="text-gray-300 hover:text-primary text-sm transition-colors">FAQ</a></li> */}
+                <li><a href="/contact" className="text-gray-300 hover:text-primary text-sm transition-colors">Privacy Policy</a></li>
               </ul>
             </div>
 
