@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import axios from 'axios';
 
 const AdminLogin = () => {
   const [formData, setFormData] = useState({
@@ -13,12 +12,6 @@ const AdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { adminLogin } = useAuth();
-
-  // Test that toast is working on component mount
-  useEffect(() => {
-    // Comment this out after verifying toast works
-    // toast.info('Admin login page loaded');
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -49,42 +42,28 @@ const AdminLogin = () => {
     }
 
     try {
-      // Use the context's adminLogin instead of direct API call
-      try {
-        console.log('Attempting admin login with:', { 
-          email: formData.email
-        });
-        
-        // Use the adminLogin function from context
-        await adminLogin({
-          email: formData.email,
-          password: formData.password
-        });
-        
-        toast.success('Admin login successful!');
-        navigate('/admin/dashboard');
-      } catch (error) {
-        console.error('Login error:', error);
-        
-        // Log the full error for debugging
-        console.log('Error details:', {
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          data: error.response?.data,
-          message: error.message
-        });
-        
-        // Get error message from response
-        const errorMessage = error.response?.data?.msg || error.message || 'Login failed';
-        setError(errorMessage);
-        
-        // Force a toast notification
-        toast.error(errorMessage);
-      }
-    } catch (err) {
-      console.error('Outer error:', err);
-      const errorMessage = 'An unexpected error occurred';
+      console.log('Attempting admin login with:', { 
+        email: formData.email,
+        API_URL: import.meta.env.VITE_LOCAL_API || 'http://localhost:8081'
+      });
+      
+      // Use the adminLogin function from context
+      await adminLogin({
+        email: formData.email,
+        password: formData.password
+      });
+      
+      toast.success('Admin login successful!');
+      navigate('/admin/dashboard');
+    } catch (error) {
+      console.error('Login error:', error);
+      console.error('Error response:', error.response);
+      
+      // Get error message from response
+      const errorMessage = error.response?.data?.msg || error.message || 'Login failed';
       setError(errorMessage);
+      
+      // Show toast notification
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -138,7 +117,7 @@ const AdminLogin = () => {
         </div>
         <div className="flex items-center justify-between">
           <button
-            className="bg-purple-600 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             type="submit"
             disabled={isLoading}
           >
@@ -148,7 +127,7 @@ const AdminLogin = () => {
             className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
             to="/login"
           >
-            User Login
+            Customer Login
           </Link>
         </div>
       </form>

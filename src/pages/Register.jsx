@@ -31,7 +31,7 @@ const Register = () => {
 
     try {
       await register(formData);
-      navigate('/');
+      navigate('/admin/dashboard');
     } catch (err) {
       setError(err.response?.data?.msg || 'Registration failed. Please check your information.');
     } finally {

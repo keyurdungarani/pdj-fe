@@ -22,13 +22,19 @@ export const ProtectedRoute = ({ children }) => {
 export const AdminRoute = ({ children }) => {
   const { currentUser, loading, isAdmin } = useAuth();
   
-  // Show loading or redirect if not authenticated or not an admin
+  // Show loading while checking authentication
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
   
-  if (!currentUser || !isAdmin()) {
-    return <Navigate to="/login" replace />;
+  // If no user is logged in, redirect to admin login
+  if (!currentUser) {
+    return <Navigate to="/admin/login" replace />;
+  }
+  
+  // If user exists but is not admin, redirect to admin login
+  if (!isAdmin()) {
+    return <Navigate to="/admin/login" replace />;
   }
   
   return children;

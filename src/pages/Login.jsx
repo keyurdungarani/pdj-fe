@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -27,9 +28,14 @@ const Login = () => {
 
     try {
       await login(formData);
+      toast.success('Login successful!');
+      // Navigate to home page for regular users
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.msg || 'Login failed. Please check your credentials.');
+      // Show error toast and set local error
+      const errorMessage = err.response?.data?.msg || 'Login failed. Please check your credentials.';
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -37,7 +43,7 @@ const Login = () => {
 
   return (
     <div className="max-w-md mx-auto my-10 p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center">Customer Login</h1>
       
       {error && (
         <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">

@@ -346,6 +346,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen overflow-x-hidden">
+      
       {/* Hero Section - Professional Jewelry Website Design */}
       <section className="relative h-screen overflow-hidden group">
         {/* Loading State */}
