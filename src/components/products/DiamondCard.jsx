@@ -87,16 +87,16 @@ const DiamondCard = ({ diamond, type = 'diamonds', viewMode = 'grid' }) => {
     >
       {/* Header with badges */}
       <div className="relative">
-        {/* New Arrival or Featured Badge */}
+        {/* New Arrival or Featured Badge - MONTSERRAT FOR UI TEXT */}
         {(isNewArrival || featured) && (
           <div className="absolute top-3 left-3 z-10">
             {isNewArrival && (
-              <span className="inline-block bg-blue-500 text-white text-xs font-medium px-2 py-1 rounded mb-1">
+              <span className="inline-block bg-blue-500 text-white text-xs font-montserrat font-medium px-2 py-1 rounded mb-1">
                 NEW
               </span>
             )}
             {featured && (
-              <span className="inline-flex items-center bg-amber-500 text-white text-xs font-medium px-2 py-1 rounded">
+              <span className="inline-flex items-center bg-amber-500 text-white text-xs font-montserrat font-medium px-2 py-1 rounded">
                 <Star size={12} className="mr-1" />
                 FEATURED
               </span>
@@ -104,16 +104,16 @@ const DiamondCard = ({ diamond, type = 'diamonds', viewMode = 'grid' }) => {
           </div>
         )}
 
-        {/* Discount Badge */}
+        {/* Discount Badge - MONTSERRAT FOR UI TEXT */}
         {discount && discount > 0 && (
-          <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded z-10">
+          <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-montserrat font-medium px-2 py-1 rounded z-10">
             {discount}% OFF
           </div>
         )}
 
-        {/* Product Type Badge */}
+        {/* Product Type Badge - MONTSERRAT FOR UI TEXT */}
         <div className="absolute bottom-3 left-3 z-10">
-          <span className={`inline-block text-xs font-medium px-2 py-1 rounded ${
+          <span className={`inline-block text-xs font-montserrat font-medium px-2 py-1 rounded ${
             productType === 'lab-grown' 
               ? 'bg-green-100 text-green-800' 
               : 'bg-blue-100 text-blue-800'
@@ -160,73 +160,73 @@ const DiamondCard = ({ diamond, type = 'diamonds', viewMode = 'grid' }) => {
 
       {/* Content */}
       <div className="p-4">
-        {/* Title */}
+        {/* Title - BASKERVILLE FOR PRODUCT NAMES */}
         <Link to={`/${type}/${_id}`}>
-          <h3 className="font-medium text-gray-900 hover:text-primary transition-colors line-clamp-2 min-h-[2.5rem]">
+          <h3 className="font-baskerville font-medium text-gray-900 hover:text-primary transition-colors line-clamp-2 min-h-[2.5rem]">
             {name}
           </h3>
         </Link>
 
-        {/* Key Specifications */}
+        {/* Key Specifications - MONTSERRAT FOR TECHNICAL SPECS */}
         <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
           {carat && (
             <div className="flex justify-between">
-              <span className="text-gray-600">Carat:</span>
-              <span className="font-medium">{carat}</span>
+              <span className="font-montserrat text-gray-600">Carat:</span>
+              <span className="font-montserrat font-medium">{carat}</span>
             </div>
           )}
           {cut && (
             <div className="flex justify-between">
-              <span className="text-gray-600">Cut:</span>
-              <span className={`font-medium ${getGradeColor(cut, 'cut')}`}>{cut}</span>
+              <span className="font-montserrat text-gray-600">Cut:</span>
+              <span className={`font-montserrat font-medium ${getGradeColor(cut, 'cut')}`}>{cut}</span>
             </div>
           )}
           {color && (
             <div className="flex justify-between">
-              <span className="text-gray-600">Color:</span>
-              <span className={`font-medium ${getGradeColor(color, 'color')}`}>{color}</span>
+              <span className="font-montserrat text-gray-600">Color:</span>
+              <span className={`font-montserrat font-medium ${getGradeColor(color, 'color')}`}>{color}</span>
             </div>
           )}
           {clarity && (
             <div className="flex justify-between">
-              <span className="text-gray-600">Clarity:</span>
-              <span className={`font-medium ${getGradeColor(clarity, 'clarity')}`}>{clarity}</span>
+              <span className="font-montserrat text-gray-600">Clarity:</span>
+              <span className={`font-montserrat font-medium ${getGradeColor(clarity, 'clarity')}`}>{clarity}</span>
             </div>
           )}
           {shape && (
             <div className="flex justify-between">
-              <span className="text-gray-600">Shape:</span>
-              <span className="font-medium">{shape}</span>
+              <span className="font-montserrat text-gray-600">Shape:</span>
+              <span className="font-montserrat font-medium">{shape}</span>
             </div>
           )}
           {certification && (
             <div className="flex justify-between">
-              <span className="text-gray-600">Cert:</span>
-              <span className="font-medium">{certification}</span>
+              <span className="font-montserrat text-gray-600">Cert:</span>
+              <span className="font-montserrat font-medium">{certification}</span>
             </div>
           )}
         </div>
 
-        {/* Price */}
+        {/* Price - MONTSERRAT FOR PRICING */}
         <div className="mt-4 flex items-center justify-between">
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-lg font-bold text-gray-900">${formattedPrice}</span>
+              <span className="text-lg font-montserrat font-bold text-gray-900">${formattedPrice}</span>
               {originalPrice && originalPrice > price && (
-                <span className="text-sm text-gray-500 line-through">${formattedOriginalPrice}</span>
+                <span className="text-sm font-montserrat text-gray-500 line-through">${formattedOriginalPrice}</span>
               )}
             </div>
             {discount && discount > 0 && (
-              <span className="text-sm text-green-600 font-medium">{discount}% off</span>
+              <span className="text-sm font-montserrat text-green-600 font-medium">{discount}% off</span>
             )}
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons - MONTSERRAT FOR UI TEXT */}
         <div className="mt-4 flex space-x-2">
           <Link
             to={`/${type}/${_id}`}
-            className="flex-1 bg-primary text-white text-center py-2 px-4 rounded-lg hover:bg-primary-dark transition-colors text-sm font-medium"
+            className="flex-1 bg-primary text-white text-center py-2 px-4 rounded-lg hover:bg-primary-dark transition-colors text-sm font-montserrat font-medium"
           >
             View Details
           </Link>

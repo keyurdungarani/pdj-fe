@@ -374,14 +374,14 @@ const Diamonds = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
+      {/* Hero Section - DIDOT FOR IMPACT */}
       <div className="bg-gradient-to-r from-gray-900 to-gray-700 text-white">
         <div className="container mx-auto px-4 pt-24 pb-16">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-4xl md:text-5xl font-didot font-medium mb-4">
               Discover Your Perfect Diamond
             </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl font-montserrat text-gray-300 max-w-3xl mx-auto">
               Explore our curated collection of certified natural and lab-grown diamonds. 
               Each stone is hand-selected for exceptional quality and brilliance.
             </p>
@@ -390,18 +390,18 @@ const Diamonds = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Diamond Type Tabs */}
+        {/* Diamond Type Tabs - BASKERVILLE FOR SUBHEADS, MONTSERRAT FOR BODY */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Browse Our Collection</h2>
-              <p className="text-gray-600">Filter by diamond type to find exactly what you're looking for</p>
+              <h2 className="text-2xl font-baskerville font-semibold text-gray-900 mb-2">Browse Our Collection</h2>
+              <p className="font-montserrat text-gray-600">Filter by diamond type to find exactly what you're looking for</p>
             </div>
             
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => handleDiamondTypeChange('lab-grown')}
-                className={`flex items-center px-4 py-2 rounded-lg font-medium transition-all ${
+                className={`flex items-center px-4 py-2 rounded-lg font-montserrat font-medium transition-all ${
                   diamondType === 'lab-grown'
                     ? 'bg-green-600 text-white shadow-md'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -413,7 +413,7 @@ const Diamonds = () => {
               
               <button
                 onClick={() => handleDiamondTypeChange('natural')}
-                className={`flex items-center px-4 py-2 rounded-lg font-medium transition-all ${
+                className={`flex items-center px-4 py-2 rounded-lg font-montserrat font-medium transition-all ${
                   diamondType === 'natural'
                     ? 'bg-blue-600 text-white shadow-md'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -426,16 +426,16 @@ const Diamonds = () => {
           </div>
         </div>
 
-        {/* Mobile Filter Button */}
+        {/* Mobile Filter Button - MONTSERRAT FOR UI TEXT */}
         <div className="lg:hidden mb-4">
           <button
             onClick={() => setShowMobileFilters(true)}
-            className="flex items-center justify-center w-full bg-white border border-gray-300 rounded-lg py-3 px-4 font-medium text-gray-700 hover:bg-gray-50 relative"
+            className="flex items-center justify-center w-full bg-white border border-gray-300 rounded-lg py-3 px-4 font-montserrat font-medium text-gray-700 hover:bg-gray-50 relative"
           >
             <Filter size={20} className="mr-2" />
             Filters
             {activeFilterCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-6 h-6 bg-primary text-white text-xs rounded-full flex items-center justify-center font-bold">
+              <span className="absolute -top-1 -right-1 w-6 h-6 bg-primary text-white text-xs font-montserrat rounded-full flex items-center justify-center font-bold">
                 {activeFilterCount}
               </span>
             )}
@@ -457,20 +457,20 @@ const Diamonds = () => {
 
           {/* Main Content */}
           <div className="flex-1">
-            {/* Results Header */}
+            {/* Results Header - BASKERVILLE FOR SUBHEADS, MONTSERRAT FOR BODY */}
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
+                <h2 className="text-xl lg:text-2xl font-baskerville font-semibold text-gray-900 mb-2">
                   {diamondType === 'lab-grown' ? 'Lab-Grown' : 'Natural'} Diamonds
                 </h2>
-                <p className="text-gray-600 text-sm lg:text-base">
+                <p className="font-montserrat text-gray-600 text-sm lg:text-base">
                   {loading ? 'Loading...' : `${filteredProducts.length} diamonds found`}
                 </p>
               </div>
               <div className="flex items-center space-x-2 lg:space-x-4">
                 {/* Desktop View Mode Toggle */}
                 <div className="hidden lg:flex items-center space-x-2">
-                  <span className="text-sm text-gray-500">View:</span>
+                  <span className="text-sm font-montserrat text-gray-500">View:</span>
                   <button
                     onClick={() => setViewMode('grid')}
                     className={`p-2 rounded ${viewMode === 'grid' ? 'bg-primary text-white' : 'bg-gray-100'}`}
@@ -484,11 +484,11 @@ const Diamonds = () => {
                     <List size={16} />
                   </button>
                 </div>
-                {/* Sort Dropdown */}
+                {/* Sort Dropdown - MONTSERRAT FOR UI */}
                 <select
                   value={filters.sortBy}
                   onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                  className="border border-gray-300 rounded-lg px-2 py-1 lg:px-3 lg:py-2 text-sm lg:text-base focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="border border-gray-300 rounded-lg px-2 py-1 lg:px-3 lg:py-2 text-sm lg:text-base font-montserrat focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   <option value="latest">Latest</option>
                   <option value="price-asc">Price: Low to High</option>
@@ -506,10 +506,10 @@ const Diamonds = () => {
               </div>
             ) : error ? (
               <div className="text-center py-12">
-                <p className="text-red-600 mb-4">{error}</p>
+                <p className="font-montserrat text-red-600 mb-4">{error}</p>
                 <button
                   onClick={fetchProducts}
-                  className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-colors"
+                  className="bg-primary text-white px-6 py-2 rounded-lg font-montserrat font-medium hover:bg-primary-dark transition-colors"
                 >
                   Try Again
                 </button>
@@ -517,11 +517,11 @@ const Diamonds = () => {
             ) : filteredProducts.length === 0 ? (
               <div className="text-center py-12">
                 <DiamondIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No diamonds found</h3>
-                <p className="text-gray-500 mb-4">Try adjusting your filters or search criteria</p>
+                <h3 className="text-lg font-baskerville font-semibold text-gray-900 mb-2">No diamonds found</h3>
+                <p className="font-montserrat text-gray-500 mb-4">Try adjusting your filters or search criteria</p>
                 <button
                   onClick={handleClearAllFilters}
-                  className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-colors"
+                  className="bg-primary text-white px-6 py-2 rounded-lg font-montserrat font-medium hover:bg-primary-dark transition-colors"
                 >
                   Clear All Filters
                 </button>
@@ -545,13 +545,13 @@ const Diamonds = () => {
           </div>
         </div>
 
-        {/* Mobile Filters Modal */}
+        {/* Mobile Filters Modal - BASKERVILLE FOR HEADINGS, MONTSERRAT FOR UI */}
         {showMobileFilters && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowMobileFilters(false)} />
             <div className="fixed inset-y-0 left-0 w-full max-w-sm bg-white shadow-xl">
               <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Filter Diamonds</h2>
+                <h2 className="text-lg font-baskerville font-semibold text-gray-900">Filter Diamonds</h2>
                 <button
                   onClick={() => setShowMobileFilters(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg"

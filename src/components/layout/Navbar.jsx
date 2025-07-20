@@ -57,7 +57,7 @@ const Navbar = () => {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${getNavbarClasses()}`}
     >
       <div className="container mx-auto px-4 flex justify-between items-center">
-        {/* Logo */}
+        {/* Logo - DIDOT FOR BRAND NAME */}
         <Link to="/" className="flex-shrink-0">
           <div className="relative">
             <h1 
@@ -77,17 +77,13 @@ const Navbar = () => {
           </div>
         </Link>
 
-
-        {/* Desktop Navigation */}
+        {/* Desktop Navigation - BASKERVILLE FOR NAVIGATION LINKS */}
         <div className="hidden md:flex items-center space-x-6">
           {navLinks.map((link) => (
             <div key={link.name} className="relative">
               <Link
                 to={link.path}
-                className={`text-sm font-medium transition-colors pb-2 ${getTextColor(isLinkActive(link.path))}`}
-                style={{
-                  fontSize: '16px'
-                }}
+                className={`text-sm font-baskerville font-medium transition-colors pb-2 ${getTextColor(isLinkActive(link.path))}`}
               >
                 {link.name}
               </Link>
@@ -98,11 +94,11 @@ const Navbar = () => {
           ))}
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons - MONTSERRAT FOR UI BUTTONS */}
         <div className="hidden md:flex items-center space-x-4">
           <Link
             to="/book-appointment"
-            className="bg-amber-200 hover:bg-amber-300 text-gray-800 px-4 py-2 rounded text-sm font-medium transition-colors"
+            className="bg-amber-200 hover:bg-amber-300 text-gray-800 px-4 py-2 rounded text-sm font-montserrat font-medium transition-colors"
           >
             BOOK APPOINTMENT
           </Link>
@@ -117,7 +113,7 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Navigation - BASKERVILLE FOR NAVIGATION, MONTSERRAT FOR BUTTONS */}
       {isMenuOpen && (
         <div className="md:hidden bg-white absolute top-full left-0 right-0 border-t border-gray-200 shadow-lg">
           <div className="container mx-auto px-4 py-4">
@@ -126,7 +122,7 @@ const Navbar = () => {
                 <Link
                   key={link.name}
                   to={link.path}
-                  className={`text-sm font-medium px-2 py-2 hover:bg-gray-100 rounded ${
+                  className={`text-sm font-baskerville font-medium px-2 py-2 hover:bg-gray-100 rounded ${
                     isLinkActive(link.path) ? 'text-primary bg-primary/10' : 'text-gray-700'
                   }`}
                   onClick={closeMenu}
@@ -136,7 +132,7 @@ const Navbar = () => {
               ))}
               <Link
                 to="/book-appointment"
-                className="bg-amber-200 hover:bg-amber-300 text-gray-800 px-4 py-3 rounded text-sm font-medium text-center"
+                className="bg-amber-200 hover:bg-amber-300 text-gray-800 px-4 py-3 rounded text-sm font-montserrat font-medium text-center"
                 onClick={closeMenu}
               >
                 BOOK APPOINTMENT

@@ -360,70 +360,70 @@ const ProductDetail = ({ product, type = 'jewelry' }) => {
           
           {/* Right: Product Info */}
           <div className="space-y-6">
-            {/* Product Type/Category */}
+            {/* Product Type/Category - MONTSERRAT FOR BODY TEXT */}
             <div>
-              <span className="text-sm text-gray-500 uppercase tracking-wider">
+              <span className="text-sm font-montserrat text-gray-500 uppercase tracking-wider">
                 {category || productType || type}
               </span>
             </div>
             
-            {/* Product Name & Price */}
+            {/* Product Name & Price - DIDOT FOR MAIN TITLE, MONTSERRAT FOR PRICING */}
             <div>
-              <h1 className="text-3xl font-semibold text-gray-800">{name}</h1>
+              <h1 className="text-3xl font-didot font-medium text-gray-800">{name}</h1>
               <div className="flex items-center mt-2">
                 {onSale && salePrice ? (
                   <>
-                    <span className="text-2xl font-bold text-red-600">${formattedSalePrice}</span>
-                    <span className="ml-2 text-lg text-gray-500 line-through">${formattedPrice}</span>
-                    <span className="ml-2 bg-red-100 text-red-700 text-xs font-medium px-2 py-0.5 rounded">
+                    <span className="text-2xl font-montserrat font-bold text-red-600">${formattedSalePrice}</span>
+                    <span className="ml-2 text-lg font-montserrat text-gray-500 line-through">${formattedPrice}</span>
+                    <span className="ml-2 bg-red-100 text-red-700 text-xs font-montserrat font-medium px-2 py-0.5 rounded">
                       {Math.round(((price - salePrice) / price) * 100)}% OFF
                     </span>
                   </>
                 ) : (
-                  <span className="text-2xl font-bold">${formattedPrice}</span>
+                  <span className="text-2xl font-montserrat font-bold">${formattedPrice}</span>
                 )}
               </div>
             </div>
             
-            {/* Availability */}
+            {/* Availability - MONTSERRAT FOR UI TEXT */}
             <div className="border-t border-b border-gray-200 py-4">
               <div className="flex justify-between items-center">
-                <span className="text-gray-700">Availability:</span>
+                <span className="font-montserrat text-gray-700">Availability:</span>
                 {countInStock > 0 ? (
-                  <span className="text-green-600 font-medium">In Stock</span>
+                  <span className="font-montserrat text-green-600 font-medium">In Stock</span>
                 ) : (
-                  <span className="text-red-600 font-medium">Out of Stock</span>
+                  <span className="font-montserrat text-red-600 font-medium">Out of Stock</span>
                 )}
               </div>
             </div>
             
-            {/* Product Description */}
+            {/* Product Description - BASKERVILLE FOR SECTION HEADINGS, MONTSERRAT FOR BODY */}
             {description && (
               <div className="prose prose-sm max-w-none">
-                <h3 className="text-lg font-medium mb-2">Description</h3>
-                <p>{description}</p>
+                <h3 className="text-lg font-baskerville font-semibold mb-2">Description</h3>
+                <p className="font-montserrat text-gray-700">{description}</p>
               </div>
             )}
             
-            {/* Product Details */}
+            {/* Product Details - BASKERVILLE FOR SECTION HEADINGS, MONTSERRAT FOR CONTENT */}
             {Object.keys(otherDetails).length > 0 && (
               <div className="border-t border-b border-gray-200 py-4">
-                <h3 className="text-lg font-medium mb-2">Product Details</h3>
+                <h3 className="text-lg font-baskerville font-semibold mb-2">Product Details</h3>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                   {Object.entries(otherDetails).map(([key, value]) => (
                     <div key={key} className="flex justify-between py-1 border-b border-gray-100">
-                      <span className="text-gray-600">{key}:</span>
-                      <span className="font-medium text-gray-900">{value.toString()}</span>
+                      <span className="font-montserrat text-gray-600">{key}:</span>
+                      <span className="font-montserrat font-medium text-gray-900">{value.toString()}</span>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Diamond Specifications */}
+            {/* Diamond Specifications - BASKERVILLE FOR SECTION HEADINGS, MONTSERRAT FOR CONTENT */}
             {hasDiamondSpecs && (
               <div className="border-t border-b border-gray-200 py-4">
-                <h3 className="text-lg font-medium mb-3 flex items-center">
+                <h3 className="text-lg font-baskerville font-semibold mb-3 flex items-center">
                   <span className="mr-2">💎</span>
                   Diamond Specifications
                 </h3>
@@ -431,8 +431,8 @@ const ProductDetail = ({ product, type = 'jewelry' }) => {
                   {Object.entries(diamondDetails).map(([key, value]) => (
                     <div key={key} className="bg-gray-50 p-3 rounded-lg">
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-600 text-sm uppercase tracking-wide">{key}:</span>
-                        <span className="font-semibold text-gray-900">{value.toString()}</span>
+                        <span className="font-montserrat text-gray-600 text-sm uppercase tracking-wide">{key}:</span>
+                        <span className="font-montserrat font-semibold text-gray-900">{value.toString()}</span>
                       </div>
                     </div>
                   ))}
@@ -440,22 +440,22 @@ const ProductDetail = ({ product, type = 'jewelry' }) => {
               </div>
             )}
             
-            {/* Specifications */}
+            {/* Specifications - BASKERVILLE FOR SECTION HEADINGS, MONTSERRAT FOR CONTENT */}
             {specifications && specifications.length > 0 && (
               <div className="border-b border-gray-200 py-4">
-                <h3 className="text-lg font-medium mb-2">Specifications</h3>
+                <h3 className="text-lg font-baskerville font-semibold mb-2">Specifications</h3>
                 <ul className="space-y-2">
                   {specifications.map((spec, idx) => (
                     <li key={idx} className="flex items-start">
                       <span className="text-primary mr-2">•</span>
-                      <span>{spec}</span>
+                      <span className="font-montserrat text-gray-700">{spec}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             )}
             
-            {/* Ratings */}
+            {/* Ratings - MONTSERRAT FOR UI TEXT */}
             {rating > 0 && (
               <div className="flex items-center space-x-2">
                 <div className="flex">
@@ -472,16 +472,16 @@ const ProductDetail = ({ product, type = 'jewelry' }) => {
                     </svg>
                   ))}
                 </div>
-                <span className="text-gray-600 text-sm">{rating.toFixed(1)} ({numReviews || 0} reviews)</span>
+                <span className="font-montserrat text-gray-600 text-sm">{rating.toFixed(1)} ({numReviews || 0} reviews)</span>
               </div>
             )}
             
-            {/* Action Buttons */}
+            {/* Action Buttons - MONTSERRAT FOR UI TEXT */}
             <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4 mt-6">
               <button 
                 onClick={() => setShowConfirmModal(true)}
                 disabled={countInStock <= 0}
-                className={`px-6 py-3 font-medium rounded transition-colors flex-1 text-center flex items-center justify-center gap-2 ${
+                className={`px-6 py-3 font-montserrat font-medium rounded transition-colors flex-1 text-center flex items-center justify-center gap-2 ${
                   countInStock > 0 
                     ? 'bg-primary hover:bg-primary-dark text-white' 
                     : 'bg-gray-200 text-gray-500 cursor-not-allowed'
@@ -492,7 +492,7 @@ const ProductDetail = ({ product, type = 'jewelry' }) => {
               </button>
               
               <button 
-                className="px-6 py-3 border border-primary text-primary hover:bg-primary/5 font-medium rounded transition-colors flex-1 text-center flex items-center justify-center gap-2"
+                className="px-6 py-3 border border-primary text-primary hover:bg-primary/5 font-montserrat font-medium rounded transition-colors flex-1 text-center flex items-center justify-center gap-2"
               >
                 <Heart size={18} />
                 Add to Wishlist

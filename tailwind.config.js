@@ -7,19 +7,26 @@ export default {
   	extend: {
       fontFamily: {
         // Logo / Brand Name fonts (High-contrast serifs)
-        'playfair': ['Playfair Display', 'serif'],
+        'didot': ['Libre Bodoni', 'Playfair Display', 'serif'], // Didot alternative
         'bodoni': ['Libre Bodoni', 'serif'],
+        'playfair': ['Playfair Display', 'serif'],
         
-        // Subheads / Navigation fonts
+        // Subheads / Navigation fonts (Classical serifs)
         'baskerville': ['Libre Baskerville', 'serif'],
+        'crimson': ['Crimson Text', 'serif'],
         
         // Body / UI Text fonts (Clean sans-serifs)
         'montserrat': ['Montserrat', 'sans-serif'],
         'lato': ['Lato', 'sans-serif'],
+        'avenir': ['Montserrat', 'system-ui', 'sans-serif'], // Avenir alternative
         
-        // Default sans-serif stack
-        'sans': ['Montserrat', 'system-ui', 'sans-serif'],
-        'serif': ['Libre Baskerville', 'serif'],
+        // Accents / Taglines (Elegant scripts)
+        'script': ['Dancing Script', 'cursive'],
+        'elegant-script': ['Great Vibes', 'Dancing Script', 'cursive'],
+        
+        // Default stacks following typography guide
+        'sans': ['Montserrat', 'system-ui', 'sans-serif'], // Clean sans-serif for body
+        'serif': ['Libre Baskerville', 'serif'], // Classical serif for subheads
       },
   		colors: {
   			primary: {

@@ -471,26 +471,26 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                 <div className="mb-4">
                   <div className="flex items-center space-x-2 mb-2">
                     <span className="text-2xl">💎</span>
-                    <span className="text-sm text-gray-500 uppercase tracking-wider">
+                    <span className="text-sm font-montserrat text-gray-500 uppercase tracking-wider">
                       {productType === 'lab-grown' ? 'Lab-Grown Diamond' : 'Natural Diamond'}
                     </span>
                   </div>
-                  <h1 className="text-2xl font-bold text-gray-900 mb-2">{name}</h1>
+                  <h1 className="text-2xl font-didot font-medium text-gray-900 mb-2">{name}</h1>
                     <div className="flex items-center space-x-2 mb-2">
                     {displayCertification && (
-                      <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium">
+                      <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-montserrat font-medium">
                         {displayCertification} Certified
                       </span>
                     )}
                     {stockNumber && (
-                      <span className="text-sm text-gray-500">SKU: {stockNumber}</span>
+                      <span className="text-sm font-montserrat text-gray-500">SKU: {stockNumber}</span>
                     )}
                     {certificateNumber && (
                       <div className="flex items-center space-x-2">
-                      <span className="text-sm text-gray-500">Cert #: </span>
+                      <span className="text-sm font-montserrat text-gray-500">Cert #: </span>
                       <button
                         onClick={() => window.open(getCertificateUrl(certificateUrl, certificateNumber, displayCertification), '_blank')}
-                        className="text-sm text-blue-600 hover:text-blue-800 underline cursor-pointer"
+                        className="text-sm font-montserrat text-blue-600 hover:text-blue-800 underline cursor-pointer"
                         title="View Certificate"
                       >
                         {certificateNumber}
@@ -500,71 +500,71 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                   </div>
                 </div>
                 
-                {/* Price */}
+                {/* Price - MONTSERRAT FOR PRICING */}
                 <div className="mb-6">
                   <div className="flex items-center space-x-2">
                     {onSale && salePrice ? (
                       <>
-                        <span className="text-3xl font-bold text-red-600">${formattedSalePrice}</span>
-                        <span className="text-lg text-gray-500 line-through">${formattedPrice}</span>
+                        <span className="text-3xl font-montserrat font-bold text-red-600">${formattedSalePrice}</span>
+                        <span className="text-lg font-montserrat text-gray-500 line-through">${formattedPrice}</span>
                         {discount && (
-                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-medium">
+                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-montserrat font-medium">
                             {discount}% OFF
                           </span>
                         )}
                       </>
                     ) : (
-                      <span className="text-3xl font-bold text-gray-900">${formattedPrice}</span>
+                      <span className="text-3xl font-montserrat font-bold text-gray-900">${formattedPrice}</span>
                     )}
                   </div>
                 </div>
                 
-                {/* Availability - Dynamic */}
+                {/* Availability - Dynamic - MONTSERRAT FOR UI TEXT */}
                 {(countInStock !== undefined && countInStock !== null) && (
                   <div className="flex items-center justify-between py-3 border-t border-b border-gray-200 mb-6">
-                    <span className="text-gray-700 font-medium">Availability:</span>
-                    <span className={`font-medium flex items-center ${availabilityStatus.color}`}>
+                    <span className="font-montserrat text-gray-700 font-medium">Availability:</span>
+                    <span className={`font-montserrat font-medium flex items-center ${availabilityStatus.color}`}>
                       {availabilityStatus.icon}
                       {availabilityStatus.text}
                     </span>
                   </div>
                 )}
                 
-                {/* Key Specifications Grid - 4Cs */}
+                {/* Key Specifications Grid - 4Cs - MONTSERRAT FOR TECHNICAL DATA */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   {displayCarat && (
                     <div className="text-center p-3 border border-gray-200 rounded-lg">
-                      <div className="text-lg font-bold text-gray-900">{displayCarat} ct</div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wider">Carat</div>
+                      <div className="text-lg font-montserrat font-bold text-gray-900">{displayCarat} ct</div>
+                      <div className="text-xs font-montserrat text-gray-500 uppercase tracking-wider">Carat</div>
                       {pricePerCarat && (
-                        <div className="text-xs text-gray-400">${pricePerCarat.toLocaleString()}/ct</div>
+                        <div className="text-xs font-montserrat text-gray-400">${pricePerCarat.toLocaleString()}/ct</div>
                       )}
                     </div>
                   )}
                   {displayCut && (
                     <div className="text-center p-3 border border-gray-200 rounded-lg">
-                      <div className={`text-lg font-bold ${getGradeColor(displayCut, 'cut')}`}>{displayCut}</div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wider">Cut</div>
+                      <div className={`text-lg font-montserrat font-bold ${getGradeColor(displayCut, 'cut')}`}>{displayCut}</div>
+                      <div className="text-xs font-montserrat text-gray-500 uppercase tracking-wider">Cut</div>
                     </div>
                   )}
                   {color && (
                     <div className="text-center p-3 border border-gray-200 rounded-lg">
-                      <div className={`text-lg font-bold ${getGradeColor(color, 'color')}`}>{color}</div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wider">Color</div>
+                      <div className={`text-lg font-montserrat font-bold ${getGradeColor(color, 'color')}`}>{color}</div>
+                      <div className="text-xs font-montserrat text-gray-500 uppercase tracking-wider">Color</div>
                       {getGradeDescription(color, 'color') && (
-                        <div className="text-xs text-gray-400">{getGradeDescription(color, 'color')}</div>
+                        <div className="text-xs font-montserrat text-gray-400">{getGradeDescription(color, 'color')}</div>
                       )}
                       {fancyColor && (
-                        <div className="text-xs text-blue-600 font-medium">{fancyColor}</div>
+                        <div className="text-xs font-montserrat text-blue-600 font-medium">{fancyColor}</div>
                       )}
                     </div>
                   )}
                   {clarity && (
                     <div className="text-center p-3 border border-gray-200 rounded-lg">
-                      <div className={`text-lg font-bold ${getGradeColor(clarity, 'clarity')}`}>{clarity}</div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wider">Clarity</div>
+                      <div className={`text-lg font-montserrat font-bold ${getGradeColor(clarity, 'clarity')}`}>{clarity}</div>
+                      <div className="text-xs font-montserrat text-gray-500 uppercase tracking-wider">Clarity</div>
                       {getGradeDescription(clarity, 'clarity') && (
-                        <div className="text-xs text-gray-400">{getGradeDescription(clarity, 'clarity')}</div>
+                        <div className="text-xs font-montserrat text-gray-400">{getGradeDescription(clarity, 'clarity')}</div>
                       )}
                     </div>
                   )}

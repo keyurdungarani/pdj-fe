@@ -360,29 +360,29 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
                 <div className="mb-4">
                   <div className="flex items-center space-x-2 mb-2">
                     <span className="text-2xl">{getJewelryIcon()}</span>
-                    <span className="text-sm text-gray-500 uppercase tracking-wider">
+                    <span className="text-sm font-montserrat text-gray-500 uppercase tracking-wider">
                       {category || productType || type}
                     </span>
                   </div>
-                  <h1 className="text-2xl font-bold text-gray-900 mb-2">{name}</h1>
+                  <h1 className="text-2xl font-didot font-medium text-gray-900 mb-2">{name}</h1>
                                   {stockNumber && (
-                  <span className="text-sm text-gray-500">SKU: {stockNumber}</span>
+                  <span className="text-sm font-montserrat text-gray-500">SKU: {stockNumber}</span>
                 )}
                 </div>
                 
-                {/* Price */}
+                {/* Price - MONTSERRAT FOR PRICING */}
                 <div className="mb-6">
                   <div className="flex items-center space-x-2">
                     {onSale && salePrice ? (
                       <>
-                        <span className="text-3xl font-bold text-red-600">${formattedSalePrice}</span>
-                        <span className="text-lg text-gray-500 line-through">${formattedPrice}</span>
-                        <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-medium">
+                        <span className="text-3xl font-montserrat font-bold text-red-600">${formattedSalePrice}</span>
+                        <span className="text-lg font-montserrat text-gray-500 line-through">${formattedPrice}</span>
+                        <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-montserrat font-medium">
                           {Math.round(((price - salePrice) / price) * 100)}% OFF
                         </span>
                       </>
                     ) : (
-                      <span className="text-3xl font-bold text-gray-900">${formattedPrice}</span>
+                      <span className="text-3xl font-montserrat font-bold text-gray-900">${formattedPrice}</span>
                     )}
                   </div>
                 </div>

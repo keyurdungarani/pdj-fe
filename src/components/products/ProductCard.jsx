@@ -102,14 +102,14 @@ const ProductCard = ({ product, type = 'jewelry', viewMode = 'grid' }) => {
       >
         {/* New Arrival Tag */}
         {isNewArrival && (
-          <div className="absolute top-0 left-0 bg-amber-400/90 text-xs font-semibold text-white py-1 px-3 rounded-br-lg z-10">
+          <div className="absolute top-0 left-0 bg-amber-400/90 text-xs font-montserrat font-semibold text-white py-1 px-3 rounded-br-lg z-10">
             NEW
           </div>
         )}
 
         {/* Discount Tag */}
         {discount && discount > 0 && (
-          <div className="absolute top-0 right-0 bg-red-500/90 text-xs font-semibold text-white py-1 px-3 rounded-bl-lg z-10">
+          <div className="absolute top-0 right-0 bg-red-500/90 text-xs font-montserrat font-semibold text-white py-1 px-3 rounded-bl-lg z-10">
             {discount}% OFF
           </div>
         )}
@@ -143,35 +143,35 @@ const ProductCard = ({ product, type = 'jewelry', viewMode = 'grid' }) => {
             <Heart size={18} className="text-gray-600" />
           </button>
           
-          {/* Quick View Button */}
+          {/* Quick View Button - MONTSERRAT FOR UI TEXT */}
           <div 
             className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-40 text-white text-center py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
             onClick={handleQuickView}
           >
-            <span className="text-xs font-medium">QUICK VIEW</span>
+            <span className="text-xs font-montserrat font-medium">QUICK VIEW</span>
           </div>
         </Link>
 
         {/* Product Info */}
         <div className="p-3 flex flex-col flex-grow">
-          {/* Brand or product type */}
-          <span className="text-xs font-medium text-gray-700 mb-1 capitalize truncate">{productType}</span>
+          {/* Brand or product type - MONTSERRAT FOR BODY TEXT */}
+          <span className="text-xs font-montserrat font-medium text-gray-700 mb-1 capitalize truncate">{productType}</span>
           
-          {/* Product Name */}
-          <h3 className="font-medium text-gray-800 mb-1 text-sm line-clamp-2 h-10">{name}</h3>
+          {/* Product Name - BASKERVILLE FOR PRODUCT TITLES */}
+          <h3 className="font-baskerville font-medium text-gray-800 mb-1 text-sm line-clamp-2 h-10">{name}</h3>
           
-          {/* Price */}
+          {/* Price - MONTSERRAT FOR PRICING */}
           <div className="flex items-center mt-1">
-            <span className="font-semibold text-base">${formattedPrice}</span>
+            <span className="font-montserrat font-semibold text-base">${formattedPrice}</span>
             
             {/* Original price with strikethrough */}
             {originalPrice && originalPrice > price && (
-              <span className="ml-2 text-xs text-gray-500 line-through">${formattedOriginalPrice}</span>
+              <span className="ml-2 text-xs font-montserrat text-gray-500 line-through">${formattedOriginalPrice}</span>
             )}
             
             {/* Discount percentage */}
             {discount && discount > 0 && (
-              <span className="ml-2 text-xs text-green-600 font-medium">{discount}% off</span>
+              <span className="ml-2 text-xs font-montserrat text-green-600 font-medium">{discount}% off</span>
             )}
           </div>
         </div>

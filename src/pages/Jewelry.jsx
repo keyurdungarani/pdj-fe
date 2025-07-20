@@ -366,22 +366,22 @@ const Jewelry = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      {/* Header - DIDOT FOR MAIN HEADING, MONTSERRAT FOR BODY */}
       <div className="bg-white border-b border-gray-200">
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl lg:text-3xl font-light text-gray-900 mb-2">
+              <h1 className="text-2xl lg:text-3xl font-didot font-medium text-gray-900 mb-2">
                 {mappedCategory || 'Jewelry Collection'}
               </h1>
-              <p className="text-gray-600">
+              <p className="font-montserrat text-gray-600">
                 Discover our exquisite collection of handcrafted jewelry
               </p>
             </div>
-            {/* Desktop View Mode Toggle */}
+            {/* Desktop View Mode Toggle - MONTSERRAT FOR UI */}
             <div className="hidden lg:flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-500">View:</span>
+                <span className="text-sm font-montserrat text-gray-500">View:</span>
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-2 rounded ${viewMode === 'grid' ? 'bg-primary text-white' : 'bg-gray-100'}`}
@@ -397,12 +397,12 @@ const Jewelry = () => {
               </div>
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center space-x-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors"
+                className="flex items-center space-x-2 bg-primary text-white px-4 py-2 rounded-lg font-montserrat font-medium hover:bg-primary-dark transition-colors"
               >
                 <SlidersHorizontal size={16} />
                 <span>Filters</span>
                 {activeFilterCount > 0 && (
-                  <span className="bg-white text-primary text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                  <span className="bg-white text-primary text-xs font-montserrat rounded-full w-5 h-5 flex items-center justify-center font-medium">
                     {activeFilterCount}
                   </span>
                 )}
@@ -412,16 +412,16 @@ const Jewelry = () => {
         </div>
       </div>
 
-      {/* Mobile Filter Button */}
+      {/* Mobile Filter Button - MONTSERRAT FOR UI TEXT */}
       <div className="lg:hidden container mx-auto px-4 py-4">
         <button
           onClick={() => setShowMobileFilters(true)}
-          className="flex items-center justify-center w-full bg-white border border-gray-300 rounded-lg py-3 px-4 font-medium text-gray-700 hover:bg-gray-50 relative"
+          className="flex items-center justify-center w-full bg-white border border-gray-300 rounded-lg py-3 px-4 font-montserrat font-medium text-gray-700 hover:bg-gray-50 relative"
         >
           <Filter size={20} className="mr-2" />
           Filters
           {activeFilterCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-6 h-6 bg-primary text-white text-xs rounded-full flex items-center justify-center font-bold">
+            <span className="absolute -top-1 -right-1 w-6 h-6 bg-primary text-white text-xs font-montserrat rounded-full flex items-center justify-center font-bold">
               {activeFilterCount}
             </span>
           )}
@@ -444,22 +444,37 @@ const Jewelry = () => {
 
           {/* Main Content */}
           <div className="flex-1">
-            {/* Results Header */}
+            {/* Results Header - BASKERVILLE FOR SUBHEADS, MONTSERRAT FOR BODY */}
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
-                  {mappedCategory || 'Jewelry Collection'}
+                <h2 className="text-xl lg:text-2xl font-baskerville font-semibold text-gray-900 mb-2">
+                  {filteredProducts.length > 0 ? 'Our Collection' : 'Browse Jewelry'}
                 </h2>
-                <p className="text-gray-600 text-sm lg:text-base">
-                  {loading ? 'Loading...' : `${filteredProducts.length} products found`}
+                <p className="font-montserrat text-gray-600 text-sm lg:text-base">
+                  {loading ? 'Loading...' : `${filteredProducts.length} items found`}
                 </p>
               </div>
               <div className="flex items-center space-x-2 lg:space-x-4">
-                {/* Sort Dropdown */}
+                {/* Mobile View Mode Toggle */}
+                <div className="lg:hidden flex items-center space-x-1">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded ${viewMode === 'grid' ? 'bg-primary text-white' : 'bg-gray-100'}`}
+                  >
+                    <Grid3X3 size={14} />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-primary text-white' : 'bg-gray-100'}`}
+                  >
+                    <List size={14} />
+                  </button>
+                </div>
+                {/* Sort Dropdown - MONTSERRAT FOR UI */}
                 <select
                   value={filters.sortBy}
                   onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                  className="border border-gray-300 rounded-lg px-2 py-1 lg:px-3 lg:py-2 text-sm lg:text-base focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="border border-gray-300 rounded-lg px-2 py-1 lg:px-3 lg:py-2 text-sm lg:text-base font-montserrat focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   <option value="latest">Latest</option>
                   <option value="price-asc">Price: Low to High</option>
@@ -470,17 +485,17 @@ const Jewelry = () => {
               </div>
             </div>
 
-            {/* Products Grid/List */}
+            {/* Products Grid */}
             {loading ? (
               <div className="flex justify-center items-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : error ? (
               <div className="text-center py-12">
-                <p className="text-red-600 mb-4">{error}</p>
+                <p className="font-montserrat text-red-600 mb-4">{error}</p>
                 <button
                   onClick={fetchProducts}
-                  className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-colors"
+                  className="bg-primary text-white px-6 py-2 rounded-lg font-montserrat font-medium hover:bg-primary-dark transition-colors"
                 >
                   Try Again
                 </button>
@@ -488,11 +503,11 @@ const Jewelry = () => {
             ) : filteredProducts.length === 0 ? (
               <div className="text-center py-12">
                 <GemIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
-                <p className="text-gray-500 mb-4">Try adjusting your filters or search criteria</p>
+                <h3 className="text-lg font-baskerville font-semibold text-gray-900 mb-2">No jewelry found</h3>
+                <p className="font-montserrat text-gray-500 mb-4">Try adjusting your filters or search criteria</p>
                 <button
                   onClick={handleClearAllFilters}
-                  className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-colors"
+                  className="bg-primary text-white px-6 py-2 rounded-lg font-montserrat font-medium hover:bg-primary-dark transition-colors"
                 >
                   Clear All Filters
                 </button>
@@ -516,13 +531,13 @@ const Jewelry = () => {
           </div>
         </div>
 
-        {/* Mobile Filters Modal */}
+        {/* Mobile Filters Modal - BASKERVILLE FOR HEADINGS */}
         {showMobileFilters && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowMobileFilters(false)} />
             <div className="fixed inset-y-0 left-0 w-full max-w-sm bg-white shadow-xl">
               <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Filter Jewelry</h2>
+                <h2 className="text-lg font-baskerville font-semibold text-gray-900">Filter Jewelry</h2>
                 <button
                   onClick={() => setShowMobileFilters(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg"
