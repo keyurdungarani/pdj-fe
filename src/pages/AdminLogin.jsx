@@ -44,7 +44,7 @@ const AdminLogin = () => {
     try {
       console.log('Attempting admin login with:', { 
         email: formData.email,
-        API_URL: import.meta.env.VITE_LOCAL_API || 'http://localhost:8081'
+        API_URL: import.meta.env.VITE_API_URL || 'http://localhost:8081'
       });
       
       // Use the adminLogin function from context

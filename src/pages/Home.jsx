@@ -115,18 +115,18 @@ const Home = () => {
     }
   ];
 
-  // Product categories
+  // Product categories (standardized naming)
   const categories = [
     {
-      title: 'Engagement Rings',
+      title: 'Rings',
       image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-      link: '/jewelry?category=engagement',
+      link: '/jewelry?category=ring',
       description: 'Begin your love story'
     },
     {
-      title: 'Wedding Bands',
+      title: 'Bands',
       image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-      link: '/jewelry?category=wedding',
+      link: '/jewelry?category=band',
       description: 'Symbols of eternal love'
     },
     {
@@ -268,16 +268,16 @@ const Home = () => {
     const fetchFeaturedProducts = async () => {
       try {
         // Fetch featured jewelry products
-        const jewelryResponse = await axios.get(`${import.meta.env.VITE_LOCAL_API || 'http://localhost:8081'}/products?featured=true&productType=jewelry&limit=4&sort=-createdAt`);
+        const jewelryResponse = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8081'}/products?featured=true&productType=jewelry&limit=4&sort=-createdAt`);
         
         // Fetch featured diamond products (including lab-grown and natural diamonds)
-        const diamondResponse = await axios.get(`${import.meta.env.VITE_LOCAL_API || 'http://localhost:8081'}/products?featured=true&productType=diamond&limit=4&sort=-createdAt`);
+        const diamondResponse = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8081'}/products?featured=true&productType=diamond&limit=4&sort=-createdAt`);
         
         // Also fetch lab-grown diamonds
-        const labGrownResponse = await axios.get(`${import.meta.env.VITE_LOCAL_API || 'http://localhost:8081'}/products?featured=true&productType=lab-grown&limit=4&sort=-createdAt`);
+        const labGrownResponse = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8081'}/products?featured=true&productType=lab-grown&limit=4&sort=-createdAt`);
         
         // Also fetch natural diamonds
-        const naturalDiamondResponse = await axios.get(`${import.meta.env.VITE_LOCAL_API || 'http://localhost:8081'}/products?featured=true&productType=natural-diamond&limit=4&sort=-createdAt`);
+        const naturalDiamondResponse = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8081'}/products?featured=true&productType=natural-diamond&limit=4&sort=-createdAt`);
         
         if (jewelryResponse.data && jewelryResponse.data.products) {
           setFeaturedJewelry(jewelryResponse.data.products || []);

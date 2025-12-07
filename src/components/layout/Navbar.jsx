@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ShoppingBag } from 'lucide-react';
+import { Menu, X, ShoppingBag, Heart } from 'lucide-react';
 import { PLACEHOLDER_IMAGES } from '../../utils/placeholderImage';
+import ProfileDropdown from './ProfileDropdown';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -96,6 +97,16 @@ const Navbar = () => {
 
         {/* Action Buttons - MONTSERRAT FOR UI BUTTONS */}
         <div className="hidden md:flex items-center space-x-4">
+          <Link
+            to="/wishlist"
+            className="relative text-gray-700 hover:text-primary transition-colors p-2"
+            title="Wishlist"
+          >
+            <Heart size={22} />
+          </Link>
+          
+          <ProfileDropdown />
+          
           <Link
             to="/book-appointment"
             className="bg-amber-200 hover:bg-amber-300 text-gray-800 px-4 py-2 rounded text-sm font-montserrat font-medium transition-colors"

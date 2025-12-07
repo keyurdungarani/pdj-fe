@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   
   // Set up API base URL 
-  const API_URL = import.meta.env.VITE_LOCAL_API || 'http://localhost:8081';
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081';
   
   // Check if user is logged in on mount
   useEffect(() => {
@@ -123,6 +123,29 @@ export const AuthProvider = ({ children }) => {
     }
   };
   
+  // Google login
+  const googleLogin = async (credential) => {
+    setLoading(true);
+    setError(null);
+    try {
+      console.log('Google login - sending credential to backend');
+      const response = await axios.post(`${API_URL}/auth/google`, { credential });
+      console.log('Google login response:', response.data);
+      
+      const { token, user } = response.data;
+      localStorage.setItem('pdjToken', token);
+      setAuthHeader(token);
+      setCurrentUser(user);
+      setLoading(false);
+      return user;
+    } catch (error) {
+      console.error('Google login error:', error);
+      setError(error.response?.data?.msg || 'Google login failed');
+      setLoading(false);
+      throw error;
+    }
+  };
+
   // Admin login
   const adminLogin = async (credentials) => {
     setLoading(true);
@@ -167,6 +190,7 @@ export const AuthProvider = ({ children }) => {
     error,
     register,
     login,
+    googleLogin,
     adminLogin,
     logout,
     isAdmin,

@@ -63,7 +63,7 @@ try {
         return;
       }
       
-      const response = await axios.get(`${import.meta.env.VITE_LOCAL_API}/products`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/products`, {
         headers: { 
           "Authorization": `Bearer ${adminToken}`
         }
@@ -254,7 +254,7 @@ try {
 
     try {
     const form = new FormData();
-    const endpoint = `${import.meta.env.VITE_LOCAL_API}/products/${
+    const endpoint = `${import.meta.env.VITE_API_URL}/products/${
       formData.type === "diamond" ? "addDiamonds" :
       formData.type === "ring" ? "addRing" : "addJewelry"
     }`;

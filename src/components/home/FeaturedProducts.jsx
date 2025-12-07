@@ -44,8 +44,8 @@ function FeaturedProducts() {
     },
     {
       id: 2,
-      name: "Wedding Band Set",
-      description: "Matching Platinum Wedding Bands",
+      name: "Band Set",
+      description: "Matching Platinum Bands",
       price: "2,999",
       image: "/ring2.jpg"
     },

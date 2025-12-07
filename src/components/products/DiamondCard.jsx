@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Eye, ShoppingCart, Award, Star } from 'lucide-react';
 import { DEFAULT_PLACEHOLDER, PLACEHOLDER_IMAGES } from '../../utils/placeholderImage';
+import WishlistButton from '../common/WishlistButton';
 
 const DiamondCard = ({ diamond, type = 'diamonds', viewMode = 'grid' }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -50,7 +51,7 @@ const DiamondCard = ({ diamond, type = 'diamonds', viewMode = 'grid' }) => {
         ? mainImage 
         : mainImage.startsWith('/api/placeholder')
         ? PLACEHOLDER_IMAGES.diamond
-        : `${import.meta.env.VITE_LOCAL_API || ''}${mainImage}`)
+        : `${import.meta.env.VITE_API_URL || ''}${mainImage}`)
     : PLACEHOLDER_IMAGES.diamond;
 
   // Get grade color for visual indicators
@@ -123,18 +124,13 @@ const DiamondCard = ({ diamond, type = 'diamonds', viewMode = 'grid' }) => {
         </div>
 
         {/* Wishlist Button */}
-        <button 
-          className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-md hover:bg-gray-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20"
-          onClick={(e) => {
-            e.preventDefault();
-            setIsWishlisted(!isWishlisted);
-          }}
-        >
-          <Heart 
-            size={16} 
-            className={isWishlisted ? 'text-red-500 fill-current' : 'text-gray-600'} 
+        <div className="absolute top-3 right-3 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 z-30 pointer-events-auto">
+          <WishlistButton 
+            productId={_id}
+            productType={productType || type}
+            size="sm"
           />
-        </button>
+        </div>
       </div>
 
       {/* Image */}

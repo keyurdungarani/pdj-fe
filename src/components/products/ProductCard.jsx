@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart, Search, ShoppingCart } from 'lucide-react';
 import ConfirmOrderModal from '../common/ConfirmOrderModal';
+import WishlistButton from '../common/WishlistButton';
 import { PLACEHOLDER_IMAGES } from '../../utils/placeholderImage';
 
 const ProductCard = ({ product, type = 'jewelry', viewMode = 'grid' }) => {
@@ -35,7 +36,7 @@ const ProductCard = ({ product, type = 'jewelry', viewMode = 'grid' }) => {
   const imageUrl = images.length > 0 && images[currentImageIndex] 
     ? (images[currentImageIndex].startsWith('http') 
         ? images[currentImageIndex] 
-        : `${import.meta.env.VITE_LOCAL_API || ''}${images[currentImageIndex]}`)
+        : `${import.meta.env.VITE_API_URL || ''}${images[currentImageIndex]}`)
     : PLACEHOLDER_IMAGES.product;
 
   // Format the price with commas
@@ -115,42 +116,41 @@ const ProductCard = ({ product, type = 'jewelry', viewMode = 'grid' }) => {
         )}
 
         {/* Image Container */}
-        <Link 
-          to={`/${type}/${_id}`}
-          className="relative block overflow-hidden pt-[125%]" // 4:5 aspect ratio
-        >
-          <img
-            src={imageUrl}
-            alt={name}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 transform group-hover:scale-105 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
-            onError={(e) => {
-              if (!imageError) {
-                setImageError(true);
-                e.target.src = PLACEHOLDER_IMAGES.product;
-              }
-            }}
-          />
-          
-          {/* Wishlist Button */}
-          <button 
-            className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              // Add wishlist functionality
-            }}
+        <div className="relative">
+          <Link 
+            to={`/${type}/${_id}`}
+            className="relative block overflow-hidden pt-[125%]" // 4:5 aspect ratio
           >
-            <Heart size={18} className="text-gray-600" />
-          </button>
+            <img
+              src={imageUrl}
+              alt={name}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 transform group-hover:scale-105 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
+              onError={(e) => {
+                if (!imageError) {
+                  setImageError(true);
+                  e.target.src = PLACEHOLDER_IMAGES.product;
+                }
+              }}
+            />
+            
+            {/* Quick View Button - MONTSERRAT FOR UI TEXT */}
+            <div 
+              className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-40 text-white text-center py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+              onClick={handleQuickView}
+            >
+              <span className="text-xs font-montserrat font-medium">QUICK VIEW</span>
+            </div>
+          </Link>
           
-          {/* Quick View Button - MONTSERRAT FOR UI TEXT */}
-          <div 
-            className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-40 text-white text-center py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
-            onClick={handleQuickView}
-          >
-            <span className="text-xs font-montserrat font-medium">QUICK VIEW</span>
+          {/* Wishlist Button - OUTSIDE Link for proper click handling */}
+          <div className="absolute top-3 right-3 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 z-30 pointer-events-auto">
+            <WishlistButton 
+              productId={_id}
+              productType={productType || type}
+              size="sm"
+            />
           </div>
-        </Link>
+        </div>
 
         {/* Product Info */}
         <div className="p-3 flex flex-col flex-grow">

@@ -26,30 +26,40 @@ const Jewelry = () => {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   
-  // Category mapping: URL parameter values to actual filter values
+  // Category mapping: URL parameter values to actual filter values (standardized)
   const categoryMapping = {
-    'engagement': 'Engagement Ring',
-    'wedding': 'Wedding Band',
+    'ring': 'Ring',
+    'rings': 'Ring',
+    'engagement': 'Ring', // Legacy support
+    'band': 'Band',
+    'bands': 'Band',
+    'wedding': 'Band', // Legacy support
     'earrings': 'Earrings',
+    'earring': 'Earrings',
     'necklace': 'Necklace',
+    'necklaces': 'Necklace',
     'bracelet': 'Bracelet',
+    'bracelets': 'Bracelet',
     'pendant': 'Pendant',
+    'pendants': 'Pendant',
     'tennis-bracelet': 'Tennis Bracelet',
     'eternity-band': 'Eternity Band',
-    'rings': 'Engagement Ring', // Default rings to engagement rings
     'jewelry': '', // General jewelry - no specific category filter
   };
 
   // Reverse mapping: filter values to URL parameter values
   const reverseMapping = {
-    'Engagement Ring': 'engagement',
-    'Wedding Band': 'wedding',
+    'Ring': 'ring',
+    'Band': 'band',
     'Earrings': 'earrings',
     'Necklace': 'necklace',
     'Bracelet': 'bracelet',
     'Pendant': 'pendant',
     'Tennis Bracelet': 'tennis-bracelet',
-    'Eternity Band': 'eternity-band'
+    'Eternity Band': 'eternity-band',
+    // Legacy support
+    'Engagement Ring': 'ring',
+    'Wedding Band': 'band'
   };
 
   // Parse URL parameters and map them to filter values
@@ -202,29 +212,35 @@ const Jewelry = () => {
       if (allProducts.length > 0) {
         let filteredProducts = allProducts;
         
-        // Apply filters
+        // Apply filters with legacy support
         if (filters.jewelryCategory) {
           filteredProducts = filteredProducts.filter(product => {
-            // Check multiple possible category fields and formats
-            const topLevelCategory = product.category?.toLowerCase();
-            const jewelrySpecsCategory = product.jewelrySpecs?.jewelryCategory?.toLowerCase();
-            const jewelrySpecsJewelryCategory = product.jewelrySpecs?.jewelryCategory?.toLowerCase();
             const filterValue = filters.jewelryCategory.toLowerCase();
             
-            // Also check for URL-style category names
-            const urlStyleCategory = reverseMapping[filters.jewelryCategory]?.toLowerCase();
+            // Normalize product categories for comparison
+            const topLevelCategory = product.category?.toLowerCase() || '';
+            const jewelrySpecsCategory = product.jewelrySpecs?.jewelryCategory?.toLowerCase() || '';
             
-            return topLevelCategory === filterValue || 
-                   topLevelCategory === urlStyleCategory ||
-                   jewelrySpecsCategory === filterValue ||
-                   jewelrySpecsJewelryCategory === filterValue ||
-                   // Handle partial matches for common variations
-                   (filterValue.includes('ring') && topLevelCategory?.includes('ring')) ||
-                   (filterValue.includes('band') && topLevelCategory?.includes('band')) ||
-                   (filterValue.includes('earrings') && topLevelCategory?.includes('earring')) ||
-                   (filterValue.includes('necklace') && topLevelCategory?.includes('necklace')) ||
-                   (filterValue.includes('bracelet') && topLevelCategory?.includes('bracelet')) ||
-                   (filterValue.includes('pendant') && topLevelCategory?.includes('pendant'));
+            // Legacy mapping for old category names
+            const legacyMap = {
+              'ring': ['ring', 'engagement ring', 'engagement'],
+              'band': ['band', 'wedding band', 'wedding'],
+              'earrings': ['earrings', 'earring'],
+              'necklace': ['necklace', 'necklaces'],
+              'bracelet': ['bracelet', 'bracelets'],
+              'pendant': ['pendant', 'pendants'],
+              'tennis bracelet': ['tennis bracelet'],
+              'eternity band': ['eternity band']
+            };
+            
+            // Get all possible matches for the filter value
+            const matchValues = legacyMap[filterValue] || [filterValue];
+            
+            // Check if any match
+            return matchValues.some(matchVal => 
+              topLevelCategory.includes(matchVal) || 
+              jewelrySpecsCategory.includes(matchVal)
+            );
           });
         }
         
@@ -355,7 +371,7 @@ const Jewelry = () => {
       images: [PLACEHOLDER_IMAGES.product],
       category: 'Jewelry',
       jewelrySpecs: {
-        jewelryCategory: ['Engagement Ring', 'Wedding Band', 'Necklace', 'Earrings'][Math.floor(Math.random() * 4)],
+        jewelryCategory: ['Ring', 'Band', 'Necklace', 'Earrings'][Math.floor(Math.random() * 4)],
         metal: ['Gold', 'Silver', 'Platinum'][Math.floor(Math.random() * 3)],
         totalCaratWeight: (Math.random() * 2 + 0.5).toFixed(2)
       },

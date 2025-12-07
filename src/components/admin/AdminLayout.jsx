@@ -71,7 +71,8 @@ const AdminLayout = ({ children }) => {
       hasSubmenu: true,
       active: location.pathname.includes('/admin/users') || location.pathname.includes('/admin/contacts') || location.pathname.includes('/admin/orders'),
       submenu: [
-        { title: 'User Management', path: '/admin/users' },
+        { title: 'User Management', path: '/admin/users/management' },
+        { title: 'User Wishlists', path: '/admin/users/wishlists' },
         { title: 'Orders', path: '/admin/orders' },
         { title: 'Contact Us', path: '/admin/contacts' }
       ]

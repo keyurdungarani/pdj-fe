@@ -21,15 +21,15 @@ function Footer() {
               <div className="space-y-3">
                 <div className="flex items-center text-gray-300">
                   <PhoneCall className="h-4 w-4 mr-3 text-primary" />
-                  <span className="text-sm font-montserrat">1 5551234567</span>
+                  <a href="tel:+1234567890" className="text-sm font-montserrat">1 5551234567</a>
                 </div>
                 <div className="flex items-center text-gray-300">
                   <Mail className="h-4 w-4 mr-3 text-primary" />
-                  <span className="text-sm font-montserrat">ex@gmail.com</span>
+                  <a href="mailto:ex@gmail.com" className="text-sm font-montserrat">ex@gmail.com</a>
                 </div>
                 <div className="flex items-center text-gray-300">
                   <MapPin className="h-4 w-4 mr-3 text-primary" />
-                  <span className="text-sm font-montserrat">Visit our Showroom</span>
+                  <a href="/contact" className="text-sm font-montserrat">Visit our Showroom</a>
                 </div>
               </div>
 
@@ -53,9 +53,9 @@ function Footer() {
               <ul className="space-y-2">
                 <li><a href="/diamonds" className="font-montserrat text-gray-300 hover:text-primary text-sm transition-colors">Natural Diamonds</a></li>
                 <li><a href="/diamonds" className="font-montserrat text-gray-300 hover:text-primary text-sm transition-colors">Lab-Grown Diamonds</a></li>
-                <li><a href="/jewelry?category=engagement" className="font-montserrat text-gray-300 hover:text-primary text-sm transition-colors">Engagement Rings</a></li>
-                <li><a href="/jewelry?category=wedding" className="font-montserrat text-gray-300 hover:text-primary text-sm transition-colors">Wedding Rings</a></li>
-                <li><a href="/jewelry?category=earrings" className="font-montserrat text-gray-300 hover:text-primary text-sm transition-colors">Diamond Earrings</a></li>
+                <li><a href="/jewelry?category=ring" className="font-montserrat text-gray-300 hover:text-primary text-sm transition-colors">Rings</a></li>
+                <li><a href="/jewelry?category=band" className="font-montserrat text-gray-300 hover:text-primary text-sm transition-colors">Bands</a></li>
+                <li><a href="/jewelry?category=earrings" className="font-montserrat text-gray-300 hover:text-primary text-sm transition-colors">Earrings</a></li>
                 <li><a href="/jewelry?category=pendant" className="font-montserrat text-gray-300 hover:text-primary text-sm transition-colors">Diamond Pendants</a></li>
                 <li><a href="/book-appointment" className="font-montserrat text-gray-300 hover:text-primary text-sm transition-colors">Book Consultation</a></li>
               </ul>

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Create API instance
-const API_URL = import.meta.env.VITE_LOCAL_API || 'http://localhost:8081';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081';
 
 // Create axios instance with default config
 const api = axios.create({
@@ -92,6 +92,7 @@ export const productAPI = {
 export const authAPI = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
+  googleAuth: (data) => api.post('/auth/google', data), // Google OAuth
   getCurrentUser: () => api.get('/auth/me'),
   adminLogin: (data) => api.post('/admin/login', data),
   adminProfile: () => api.get('/admin/profile'),
@@ -207,6 +208,27 @@ export const customerReviewsAdminAPI = {
   getStats: () => api.get('/customer-reviews/stats'),
 };
 
+// Wishlist API
+export const wishlistAPI = {
+  getWishlist: () => api.get('/wishlist'),
+  addToWishlist: (productId, productType) => api.post('/wishlist/add', { productId, productType }),
+  removeFromWishlist: (productId) => api.delete(`/wishlist/remove/${productId}`),
+  clearWishlist: () => api.delete('/wishlist/clear'),
+  checkWishlistItem: (productId) => api.get(`/wishlist/check/${productId}`),
+  // Admin
+  getAllWishlists: (params) => api.get('/wishlist/admin/all', { params })
+};
+
+// User Management API
+export const userManagementAPI = {
+  getAllUsers: (params) => api.get('/users', { params }),
+  getUserById: (id) => api.get(`/users/${id}`),
+  updateUser: (id, data) => api.put(`/users/${id}`, data),
+  disableUser: (id) => api.patch(`/users/${id}/disable`),
+  enableUser: (id) => api.patch(`/users/${id}/enable`),
+  getUserStats: () => api.get('/users/stats')
+};
+
 export default {
   productAPI,
   authAPI,
@@ -217,5 +239,7 @@ export default {
   featuredImagesAPI,
   shopCategoriesAPI,
   customerReviewsAPI,
-  customerReviewsAdminAPI
+  customerReviewsAdminAPI,
+  wishlistAPI,
+  userManagementAPI
 };
