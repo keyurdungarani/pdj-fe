@@ -7,7 +7,724 @@ import Modal from "../components/ui/Modal";
 import { adminAPI } from "../services/api";
 import ImagePreview from '../components/ImagePreview';
 import './GalleryManager.css';
-import { X, Upload, Image as ImageIcon } from 'lucide-react';
+import { X, Upload, Image as ImageIcon, Plus, Trash2, ChevronDown, ChevronUp, Star, GripVertical } from 'lucide-react';
+
+// ========================================
+// METAL VARIATION EDITOR COMPONENT
+// ========================================
+const MetalVariationEditor = ({ variations = [], onChange, onFileChange, defaultVariation, onDefaultChange }) => {
+  const [expandedIndex, setExpandedIndex] = useState(null);
+
+  const metalOptions = {
+    carats: ['10K', '14K', '18K', '22K', '24K', 'Platinum', 'Silver', 'Sterling Silver'],
+    colors: ['White', 'Yellow', 'Rose', 'Two-Tone'],
+    metals: ['Gold', 'Platinum', 'Silver', 'Palladium']
+  };
+
+  const addVariation = () => {
+    const newVariation = {
+      metal: 'Gold',
+      displayName: '',
+      carat: '14K',
+      color: 'White',
+      priceAdjustment: 0,
+      images: [],
+      mainImage: '',
+      available: true,
+      stockCount: 1
+    };
+    onChange([...variations, newVariation]);
+    setExpandedIndex(variations.length);
+  };
+
+  const removeVariation = (index) => {
+    const updated = variations.filter((_, i) => i !== index);
+    onChange(updated);
+    if (expandedIndex === index) setExpandedIndex(null);
+    if (defaultVariation === index) onDefaultChange(0);
+    else if (defaultVariation > index) onDefaultChange(defaultVariation - 1);
+  };
+
+  const updateVariation = (index, field, value) => {
+    const updated = [...variations];
+    updated[index] = { ...updated[index], [field]: value };
+    
+    // Auto-generate display name
+    if (field === 'carat' || field === 'color') {
+      const carat = field === 'carat' ? value : updated[index].carat;
+      const color = field === 'color' ? value : updated[index].color;
+      if (carat && color) {
+        if (carat === 'Platinum' || carat === 'Silver' || carat === 'Sterling Silver') {
+          updated[index].displayName = carat;
+          updated[index].metal = carat === 'Platinum' ? 'Platinum' : 'Silver';
+        } else {
+          updated[index].displayName = `${color} Gold (${carat})`;
+          updated[index].metal = `${carat} ${color} Gold`;
+        }
+      }
+    }
+    onChange(updated);
+  };
+
+  const handleImageUpload = (index, type, files) => {
+    if (!files || files.length === 0) return;
+    
+    const updated = [...variations];
+    if (type === 'main') {
+      updated[index].mainImageFile = files[0];
+      updated[index].mainImagePreview = URL.createObjectURL(files[0]);
+      if (onFileChange) {
+        onFileChange({ [`metalVariation_${index}_mainImage`]: files[0] });
+      }
+    } else {
+      updated[index].imageFiles = Array.from(files);
+      updated[index].imagesPreview = Array.from(files).map(f => URL.createObjectURL(f));
+      if (onFileChange) {
+        onFileChange({ [`metalVariation_${index}_images`]: Array.from(files) });
+      }
+    }
+    onChange(updated);
+  };
+
+  const getColorDot = (color) => {
+    const colors = {
+      'White': '#f5f5f5',
+      'Yellow': '#ffd700',
+      'Rose': '#e8a4a4',
+      'Two-Tone': 'linear-gradient(135deg, #ffd700 50%, #f5f5f5 50%)'
+    };
+    return colors[color] || '#ccc';
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h4 className="font-semibold text-gray-900 text-lg flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600"></span>
+            Metal Variations
+          </h4>
+          <p className="text-sm text-gray-600">Configure different metal/carat options with unique pricing and images</p>
+        </div>
+        <button
+          type="button"
+          onClick={addVariation}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+        >
+          <Plus size={18} />
+          Add Variation
+        </button>
+      </div>
+
+      {variations.length === 0 ? (
+        <div className="text-center py-8 bg-white rounded-lg border-2 border-dashed border-gray-300">
+          <div className="text-gray-400 mb-2">
+            <Star size={40} className="mx-auto" />
+          </div>
+          <p className="text-gray-500 font-medium">No metal variations added yet</p>
+          <p className="text-sm text-gray-400">Click "Add Variation" to create metal/carat options</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {variations.map((variation, index) => (
+            <div 
+              key={index} 
+              className={`bg-white rounded-xl border-2 transition-all ${
+                defaultVariation === index ? 'border-blue-500 shadow-md' : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              {/* Header */}
+              <div 
+                className="flex items-center justify-between p-4 cursor-pointer"
+                onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
+              >
+                <div className="flex items-center gap-3">
+                  <div 
+                    className="w-6 h-6 rounded-full border-2 border-gray-300 shadow-inner"
+                    style={{ background: getColorDot(variation.color) }}
+                  />
+                  <div>
+                    <h5 className="font-semibold text-gray-900">
+                      {variation.displayName || variation.metal || `Variation ${index + 1}`}
+                    </h5>
+                    <p className="text-sm text-gray-500">
+                      {variation.priceAdjustment > 0 ? '+' : ''}{variation.priceAdjustment !== 0 ? `$${variation.priceAdjustment}` : 'Base price'}
+                      {' • '}Stock: {variation.stockCount || 0}
+                      {!variation.available && ' • Unavailable'}
+                    </p>
+                  </div>
+                  {defaultVariation === index && (
+                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+                      Default
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDefaultChange(index);
+                    }}
+                    className={`p-2 rounded-lg transition-colors ${
+                      defaultVariation === index ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100 text-gray-400'
+                    }`}
+                    title="Set as default"
+                  >
+                    <Star size={18} fill={defaultVariation === index ? 'currentColor' : 'none'} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeVariation(index);
+                    }}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                  {expandedIndex === index ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                </div>
+              </div>
+
+              {/* Expanded Content */}
+              {expandedIndex === index && (
+                <div className="px-4 pb-4 border-t border-gray-100 pt-4 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {/* Carat */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Carat</label>
+                      <select
+                        value={variation.carat || ''}
+                        onChange={(e) => updateVariation(index, 'carat', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Select</option>
+                        {metalOptions.carats.map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Color */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                      <select
+                        value={variation.color || ''}
+                        onChange={(e) => updateVariation(index, 'color', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        disabled={['Platinum', 'Silver', 'Sterling Silver'].includes(variation.carat)}
+                      >
+                        <option value="">Select</option>
+                        {metalOptions.colors.map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Price Adjustment */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Price Adjustment ($)</label>
+                      <input
+                        type="number"
+                        value={variation.priceAdjustment || 0}
+                        onChange={(e) => updateVariation(index, 'priceAdjustment', parseFloat(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="+/- from base price"
+                      />
+                    </div>
+
+                    {/* Stock Count */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Stock Count</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={variation.stockCount || 0}
+                        onChange={(e) => updateVariation(index, 'stockCount', parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Display Name & Availability */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
+                      <input
+                        type="text"
+                        value={variation.displayName || ''}
+                        onChange={(e) => updateVariation(index, 'displayName', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="e.g., White Gold (14K)"
+                      />
+                    </div>
+                    <div className="flex items-end">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={variation.available !== false}
+                          onChange={(e) => updateVariation(index, 'available', e.target.checked)}
+                          className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Available for Purchase</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Images Section */}
+                  <div className="border-t border-gray-100 pt-4">
+                    <h6 className="text-sm font-semibold text-gray-700 mb-3">Variation Images</h6>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Main Image */}
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-2">Main Image</label>
+                        <div className="flex items-start gap-3">
+                          {(variation.mainImage || variation.mainImagePreview) && (
+                            <img 
+                              src={variation.mainImagePreview || (variation.mainImage?.startsWith('http') ? variation.mainImage : `${import.meta.env.VITE_API_URL}${variation.mainImage}`)}
+                              alt="Main" 
+                              className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                            />
+                          )}
+                          <label className="flex-1 flex flex-col items-center justify-center px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors">
+                            <Upload size={20} className="text-gray-400 mb-1" />
+                            <span className="text-sm text-gray-500">Upload main image</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => handleImageUpload(index, 'main', e.target.files)}
+                            />
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Gallery Images */}
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-2">Gallery Images ({(variation.images?.length || 0) + (variation.imageFiles?.length || 0)} images)</label>
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {variation.images?.map((img, imgIdx) => (
+                            <img 
+                              key={imgIdx}
+                              src={img?.startsWith('http') ? img : `${import.meta.env.VITE_API_URL}${img}`}
+                              alt={`Gallery ${imgIdx + 1}`}
+                              className="w-16 h-16 object-cover rounded border border-gray-200"
+                            />
+                          ))}
+                          {variation.imagesPreview?.map((preview, imgIdx) => (
+                            <img 
+                              key={`preview-${imgIdx}`}
+                              src={preview}
+                              alt={`New ${imgIdx + 1}`}
+                              className="w-16 h-16 object-cover rounded border-2 border-green-400"
+                            />
+                          ))}
+                        </div>
+                        <label className="flex items-center justify-center px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors">
+                          <Upload size={18} className="text-gray-400 mr-2" />
+                          <span className="text-sm text-gray-500">Add gallery images</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => handleImageUpload(index, 'gallery', e.target.files)}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ========================================
+// DIAMOND ORIGIN EDITOR COMPONENT
+// ========================================
+const DiamondOriginEditor = ({ origins = [], onChange, defaultOrigin, onDefaultChange }) => {
+  const originTypes = [
+    { value: 'Natural', label: 'Natural Diamond', description: 'Earth-mined diamond' },
+    { value: 'Lab-Grown', label: 'Lab-Grown Diamond', description: 'Laboratory created diamond' }
+  ];
+
+  const addOrigin = () => {
+    const newOrigin = {
+      origin: '',
+      displayName: '',
+      priceAdjustment: 0,
+      available: true,
+      description: ''
+    };
+    onChange([...origins, newOrigin]);
+  };
+
+  const removeOrigin = (index) => {
+    const updated = origins.filter((_, i) => i !== index);
+    onChange(updated);
+    if (defaultOrigin === index) onDefaultChange(0);
+    else if (defaultOrigin > index) onDefaultChange(defaultOrigin - 1);
+  };
+
+  const updateOrigin = (index, field, value) => {
+    const updated = [...origins];
+    updated[index] = { ...updated[index], [field]: value };
+    
+    if (field === 'origin') {
+      const selectedType = originTypes.find(t => t.value === value);
+      if (selectedType) {
+        updated[index].displayName = selectedType.label;
+        updated[index].description = selectedType.description;
+      }
+    }
+    onChange(updated);
+  };
+
+  const getOriginIcon = (origin) => {
+    if (origin === 'Natural') return '💎';
+    if (origin === 'Lab-Grown') return '🔬';
+    return '✨';
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h4 className="font-semibold text-gray-900 text-lg flex items-center gap-2">
+            <span className="text-lg">💎</span>
+            Diamond Origin Options
+          </h4>
+          <p className="text-sm text-gray-600">Configure Natural vs Lab-Grown diamond pricing</p>
+        </div>
+        <button
+          type="button"
+          onClick={addOrigin}
+          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+        >
+          <Plus size={18} />
+          Add Origin
+        </button>
+      </div>
+
+      {origins.length === 0 ? (
+        <div className="text-center py-8 bg-white rounded-lg border-2 border-dashed border-gray-300">
+          <div className="text-gray-400 mb-2 text-3xl">💎</div>
+          <p className="text-gray-500 font-medium">No diamond origin options added</p>
+          <p className="text-sm text-gray-400">Add options if this jewelry has Natural/Lab-Grown diamond choices</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {origins.map((origin, index) => (
+            <div 
+              key={index} 
+              className={`bg-white p-4 rounded-xl border-2 transition-all ${
+                defaultOrigin === index ? 'border-green-500 shadow-md' : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{getOriginIcon(origin.origin)}</span>
+                  <div>
+                    <h5 className="font-semibold text-gray-900">
+                      {origin.displayName || origin.origin || `Origin ${index + 1}`}
+                    </h5>
+                    {defaultOrigin === index && (
+                      <span className="text-xs text-green-600 font-medium">Default option</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => onDefaultChange(index)}
+                    className={`p-1.5 rounded-lg transition-colors ${
+                      defaultOrigin === index ? 'bg-green-100 text-green-600' : 'hover:bg-gray-100 text-gray-400'
+                    }`}
+                    title="Set as default"
+                  >
+                    <Star size={16} fill={defaultOrigin === index ? 'currentColor' : 'none'} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeOrigin(index)}
+                    className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Origin Type</label>
+                  <select
+                    value={origin.origin || ''}
+                    onChange={(e) => updateOrigin(index, 'origin', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  >
+                    <option value="">Select Origin</option>
+                    {originTypes.map(type => (
+                      <option key={type.value} value={type.value}>{type.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Price Adjustment ($)</label>
+                    <input
+                      type="number"
+                      value={origin.priceAdjustment || 0}
+                      onChange={(e) => updateOrigin(index, 'priceAdjustment', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      placeholder="+/- amount"
+                    />
+                  </div>
+                  <div className="flex items-end pb-1">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={origin.available !== false}
+                        onChange={(e) => updateOrigin(index, 'available', e.target.checked)}
+                        className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                      />
+                      <span className="text-sm text-gray-700">Available</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
+                  <input
+                    type="text"
+                    value={origin.description || ''}
+                    onChange={(e) => updateOrigin(index, 'description', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                    placeholder="e.g., Premium quality natural diamonds"
+                  />
+                </div>
+
+                {/* Price Preview */}
+                <div className="bg-gray-50 rounded-lg p-2 text-center">
+                  <span className={`text-lg font-bold ${origin.priceAdjustment > 0 ? 'text-red-600' : origin.priceAdjustment < 0 ? 'text-green-600' : 'text-gray-600'}`}>
+                    {origin.priceAdjustment > 0 ? '+' : ''}{origin.priceAdjustment !== 0 ? `$${Math.abs(origin.priceAdjustment)}` : 'Base Price'}
+                  </span>
+                  <span className="text-xs text-gray-500 block">
+                    {origin.priceAdjustment > 0 ? 'above base' : origin.priceAdjustment < 0 ? 'below base' : 'no adjustment'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ========================================
+// SIZE VARIATION EDITOR COMPONENT
+// ========================================
+const SizeVariationEditor = ({ variations = [], onChange, defaultVariation, onDefaultChange, categoryType = 'general' }) => {
+  const [expandedIndex, setExpandedIndex] = useState(null);
+
+  // Pre-defined size options based on category type
+  const sizeOptions = {
+    necklace: ['10 inch', '12 inch', '14 inch', '16 inch', '18 inch', '20 inch', '22 inch', '24 inch', '26 inch', '30 inch'],
+    bracelet: ['4 inch', '4.5 inch', '5 inch', '5.5 inch', '6 inch', '6.5 inch', '7 inch', '7.5 inch', '8 inch', '8.5 inch', '9 inch'],
+    ring: ['4', '4.5', '5', '5.5', '6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12'],
+    earring: ['Small', 'Medium', 'Large', 'Extra Large'],
+    general: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'One Size']
+  };
+
+  const currentSizeOptions = sizeOptions[categoryType] || sizeOptions.general;
+
+  const addVariation = () => {
+    const newVariation = {
+      size: '',
+      displayName: '',
+      priceAdjustment: 0,
+      available: true,
+      stockCount: 1,
+      description: ''
+    };
+    onChange([...variations, newVariation]);
+    setExpandedIndex(variations.length);
+  };
+
+  const removeVariation = (index) => {
+    const updated = variations.filter((_, i) => i !== index);
+    onChange(updated);
+    if (expandedIndex === index) setExpandedIndex(null);
+    if (defaultVariation === index) onDefaultChange(0);
+    else if (defaultVariation > index) onDefaultChange(defaultVariation - 1);
+  };
+
+  const updateVariation = (index, field, value) => {
+    const updated = [...variations];
+    updated[index] = { ...updated[index], [field]: value };
+    
+    // Auto-generate display name if size is set
+    if (field === 'size' && value) {
+      if (categoryType === 'ring') {
+        updated[index].displayName = `Size ${value}`;
+      } else {
+        updated[index].displayName = value;
+      }
+    }
+    
+    onChange(updated);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h4 className="font-semibold text-gray-900 text-lg flex items-center gap-2">
+            <span className="text-lg">📏</span>
+            Size Variations
+          </h4>
+          <p className="text-sm text-gray-600">Configure different size options with unique pricing</p>
+        </div>
+        <button
+          type="button"
+          onClick={addVariation}
+          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-sm"
+        >
+          <Plus size={18} />
+          Add Size
+        </button>
+      </div>
+
+      {variations.length === 0 ? (
+        <div className="text-center py-8 bg-white rounded-lg border-2 border-dashed border-gray-300">
+          <div className="text-gray-400 mb-2 text-3xl">📏</div>
+          <p className="text-gray-500 font-medium">No size variations added</p>
+          <p className="text-sm text-gray-400">Add options for different sizes</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {variations.map((variation, index) => (
+            <div 
+              key={index} 
+              className={`bg-white p-4 rounded-xl border-2 transition-all ${
+                defaultVariation === index ? 'border-purple-500 shadow-md' : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold">
+                    {variation.size || index + 1}
+                  </div>
+                  <div>
+                    <h5 className="font-semibold text-gray-900">
+                      {variation.displayName || variation.size || `Size ${index + 1}`}
+                    </h5>
+                    {defaultVariation === index && (
+                      <span className="text-xs text-purple-600 font-medium">Default option</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => onDefaultChange(index)}
+                    className={`p-1.5 rounded-lg transition-colors ${
+                      defaultVariation === index ? 'bg-purple-100 text-purple-600' : 'hover:bg-gray-100 text-gray-400'
+                    }`}
+                    title="Set as default"
+                  >
+                    <Star size={16} fill={defaultVariation === index ? 'currentColor' : 'none'} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeVariation(index)}
+                    className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
+                    className="p-1.5 hover:bg-gray-100 rounded-lg"
+                  >
+                    {expandedIndex === index ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              {expandedIndex === index && (
+                <div className="space-y-3 border-t pt-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
+                    <select
+                      value={variation.size || ''}
+                      onChange={(e) => updateVariation(index, 'size', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                    >
+                      <option value="">Select Size</option>
+                      {currentSizeOptions.map(size => (
+                        <option key={size} value={size}>{size}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Price Adjustment ($)</label>
+                      <input
+                        type="number"
+                        value={variation.priceAdjustment || 0}
+                        onChange={(e) => updateVariation(index, 'priceAdjustment', parseFloat(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                        placeholder="+/- amount"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={variation.stockCount || 0}
+                        onChange={(e) => updateVariation(index, 'stockCount', parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={variation.available !== false}
+                      onChange={(e) => updateVariation(index, 'available', e.target.checked)}
+                      className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                    />
+                    <label className="text-sm text-gray-700">Available</label>
+                  </div>
+
+                  <div className="bg-purple-50 rounded-lg p-2 text-center">
+                    <span className={`text-lg font-bold ${variation.priceAdjustment > 0 ? 'text-red-600' : variation.priceAdjustment < 0 ? 'text-green-600' : 'text-gray-600'}`}>
+                      {variation.priceAdjustment > 0 ? '+' : ''}{variation.priceAdjustment !== 0 ? `$${Math.abs(variation.priceAdjustment)}` : 'Base Price'}
+                    </span>
+                    <span className="text-xs text-gray-500 block">
+                      {variation.priceAdjustment > 0 ? 'above base' : variation.priceAdjustment < 0 ? 'below base' : 'no adjustment'}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 // Empty placeholder image as a data URI - gray square with "No Image" text
 const PLACEHOLDER_IMAGE = "/placeholder-image.svg";
@@ -70,6 +787,15 @@ const ProductAdminPanel = () => {
   
   // Add state for specifications
   const [specifications, setSpecifications] = useState({});
+  
+  // State for jewelry variations (metalVariations in DB)
+  const [metalVariations, setMetalVariations] = useState([]);
+  const [diamondOriginOptions, setDiamondOriginOptions] = useState([]);
+  const [sizeVariations, setSizeVariations] = useState([]);
+  const [variationFiles, setVariationFiles] = useState({});
+  const [defaultMetalVariation, setDefaultMetalVariation] = useState(0);
+  const [defaultDiamondOrigin, setDefaultDiamondOrigin] = useState(0);
+  const [defaultSizeVariation, setDefaultSizeVariation] = useState(0);
   
   // State for deletion
   const [selectedProducts, setSelectedProducts] = useState([]);
@@ -261,6 +987,17 @@ const ProductAdminPanel = () => {
     switch (productToEdit.productType) {
       case 'jewelry':
         specs = productToEdit.jewelrySpecs || {};
+        // Load jewelry variations and origin options from correct field names
+        console.log('Loading jewelry specs:', specs);
+        console.log('Metal variations from DB:', specs.metalVariations);
+        console.log('Diamond origin options from DB:', specs.diamondOriginOptions);
+        
+        setMetalVariations(specs.metalVariations || []);
+        setDiamondOriginOptions(specs.diamondOriginOptions || []);
+        setSizeVariations(specs.sizeVariations || []);
+        setDefaultMetalVariation(specs.defaultMetalVariation || 0);
+        setDefaultDiamondOrigin(specs.defaultDiamondOrigin || 0);
+        setDefaultSizeVariation(specs.defaultSizeVariation || 0);
         break;
       case 'diamond':
         specs = productToEdit.diamondSpecs || {};
@@ -305,6 +1042,38 @@ const ProductAdminPanel = () => {
       // Add specifications
       if (Object.keys(specifications).length > 0) {
         formData.append('specifications', JSON.stringify(specifications));
+      }
+      
+      // Add jewelry variations and origin options for jewelry products
+      if (editingProduct.productType === 'jewelry') {
+        // Use metalVariations (database field name)
+        if (metalVariations.length > 0) {
+          formData.append('metalVariations', JSON.stringify(metalVariations));
+        }
+        if (diamondOriginOptions.length > 0) {
+          formData.append('diamondOriginOptions', JSON.stringify(diamondOriginOptions));
+        }
+        if (sizeVariations.length > 0) {
+          formData.append('sizeVariations', JSON.stringify(sizeVariations));
+        }
+        formData.append('defaultMetalVariation', defaultMetalVariation);
+        formData.append('defaultDiamondOrigin', defaultDiamondOrigin);
+        formData.append('defaultSizeVariation', defaultSizeVariation);
+        
+        // Add variation image files
+        if (variationFiles && Object.keys(variationFiles).length > 0) {
+          Object.entries(variationFiles).forEach(([key, files]) => {
+            if (Array.isArray(files)) {
+              files.forEach(file => {
+                if (file instanceof File) {
+                  formData.append(key, file);
+                }
+              });
+            } else if (files instanceof File) {
+              formData.append(key, files);
+            }
+          });
+        }
       }
       
       // Add URL-based image links
@@ -386,6 +1155,13 @@ const ProductAdminPanel = () => {
         videoLink: ''
       });
       setSpecifications({});
+      setMetalVariations([]);
+      setDiamondOriginOptions([]);
+      setSizeVariations([]);
+      setVariationFiles({});
+      setDefaultMetalVariation(0);
+      setDefaultDiamondOrigin(0);
+      setDefaultSizeVariation(0);
       
       // Reset file data
       setFileData({
@@ -420,6 +1196,13 @@ const ProductAdminPanel = () => {
       videoLink: ''
     });
     setSpecifications({});
+    setMetalVariations([]);
+    setDiamondOriginOptions([]);
+    setSizeVariations([]);
+    setVariationFiles({});
+    setDefaultMetalVariation(0);
+    setDefaultDiamondOrigin(0);
+    setDefaultSizeVariation(0);
     
     // Reset file data
     setFileData({
@@ -694,6 +1477,47 @@ const ProductAdminPanel = () => {
     <div className="space-y-6">
       <h4 className="font-medium text-gray-700 text-lg">Jewelry Specifications</h4>
       
+      {/* Metal Variations Section */}
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200 shadow-sm">
+        <MetalVariationEditor
+          variations={metalVariations}
+          onChange={setMetalVariations}
+          onFileChange={(files) => {
+            setVariationFiles(prev => ({ ...prev, ...files }));
+          }}
+          defaultVariation={defaultMetalVariation}
+          onDefaultChange={setDefaultMetalVariation}
+        />
+      </div>
+
+      {/* Diamond Origin Options Section */}
+      <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200 shadow-sm">
+        <DiamondOriginEditor
+          origins={diamondOriginOptions}
+          onChange={setDiamondOriginOptions}
+          defaultOrigin={defaultDiamondOrigin}
+          onDefaultChange={setDefaultDiamondOrigin}
+        />
+      </div>
+
+      {/* Size Variations Section */}
+      <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-xl border border-purple-200 shadow-sm">
+        <SizeVariationEditor
+          variations={sizeVariations}
+          onChange={setSizeVariations}
+          defaultVariation={defaultSizeVariation}
+          onDefaultChange={setDefaultSizeVariation}
+          categoryType={
+            specifications.jewelryCategory === 'Ring' ? 'ring' :
+            specifications.jewelryCategory === 'Band' ? 'ring' :
+            specifications.jewelryCategory === 'Necklace' ? 'necklace' :
+            specifications.jewelryCategory === 'Bracelet' ? 'bracelet' :
+            specifications.jewelryCategory === 'Earrings' ? 'earring' :
+            'general'
+          }
+        />
+      </div>
+      
       {/* Basic Information */}
       <div className="bg-white p-4 rounded-lg border border-gray-200">
         <h5 className="font-medium text-gray-800 mb-3">Basic Information</h5>
@@ -717,10 +1541,10 @@ const ProductAdminPanel = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Select Style</option>
-              <option value="Solitaire Engagement Ring">Solitaire Engagement Ring</option>
-              <option value="Three Stone Engagement Ring">Three Stone Engagement Ring</option>
-              <option value="Side Stone Engagement Ring">Side Stone Engagement Ring</option>
-              <option value="Halo Engagement Ring">Halo Engagement Ring</option>
+              <option value="Solitaire Ring">Solitaire Ring</option>
+              <option value="Three Stone Ring">Three Stone Ring</option>
+              <option value="Side Stone Ring">Side Stone Ring</option>
+              <option value="Halo Ring">Halo Ring</option>
               <option value="Tennis Bracelet">Tennis Bracelet</option>
               <option value="Drop Earrings">Drop Earrings</option>
               <option value="Tennis Necklace">Tennis Necklace</option>
@@ -1566,7 +2390,7 @@ const ProductAdminPanel = () => {
     const imageUrl = product.mainImage && (
       product.mainImage.startsWith('http') 
         ? product.mainImage 
-        : `${import.meta.env.VITE_LOCAL_API}${product.mainImage}`
+        : `${import.meta.env.VITE_API_URL}${product.mainImage}`
     );
     const isSelected = selectedProducts.some(p => p._id === product._id);
     
@@ -2168,7 +2992,7 @@ const ProductAdminPanel = () => {
                             <ImagePreview 
                               src={editingProduct.mainImage.startsWith('http') 
                                 ? editingProduct.mainImage 
-                                : `${import.meta.env.VITE_LOCAL_API}${editingProduct.mainImage}`}
+                                : `${import.meta.env.VITE_API_URL}${editingProduct.mainImage}`}
                               alt="Current main image"
                               thumbnailHeight="80px"
                               placeholderImage={PLACEHOLDER_IMAGE}
@@ -2225,7 +3049,7 @@ const ProductAdminPanel = () => {
                                 src={
                                   fileData.galleryImages && fileData.galleryImages[index] instanceof File
                                     ? URL.createObjectURL(fileData.galleryImages[index])
-                                    : (img && img.startsWith('http') ? img : `${import.meta.env.VITE_LOCAL_API}${img}`)
+                                    : (img && img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL}${img}`)
                                 }
                                 alt={`Gallery image ${index + 1}`} 
                                 thumbnailHeight="100%"

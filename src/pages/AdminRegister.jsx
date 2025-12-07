@@ -43,7 +43,7 @@ const AdminRegister = () => {
     }
 
     try {
-      const API_URL = import.meta.env.VITE_LOCAL_API || 'http://localhost:8081/api';
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api';
       
       // Make the API call to register admin
       const response = await axios.post(`${API_URL}/admin/register`, {

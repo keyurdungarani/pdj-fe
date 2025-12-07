@@ -105,14 +105,14 @@ const Login = () => {
             Create account
           </Link>
         </div>
-        <div className="mt-6 text-center">
+        {/* <div className="mt-6 text-center">
           <Link
             className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
             to="/admin/login"
           >
             Admin Login
           </Link>
-        </div>
+        </div> */}
       </form>
     </div>
   );

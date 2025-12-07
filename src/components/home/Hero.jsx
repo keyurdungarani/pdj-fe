@@ -69,10 +69,10 @@ function Home() {
               link="/diamonds"
             />
             <CollectionCard 
-              title="Wedding Rings"
+              title="Rings & Bands"
               image="/wedding-rings.jpg"
               description="Timeless designs for your special day"
-              link="/wedding-rings"
+              link="/jewelry?category=ring"
             />
             <CollectionCard 
               title="Custom Jewelry"

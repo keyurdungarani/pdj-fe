@@ -53,7 +53,7 @@ const ProductDetail = ({ product, type = 'jewelry' }) => {
     
     return imagePath.startsWith('http') 
       ? imagePath 
-      : `${import.meta.env.VITE_LOCAL_API || ''}${imagePath}`;
+      : `${import.meta.env.VITE_API_URL || ''}${imagePath}`;
   };
   
   // Prepare all images

@@ -20,6 +20,7 @@ import {
   ShoppingBag
 } from 'lucide-react';
 import ConfirmOrderModal from '../common/ConfirmOrderModal';
+import WishlistButton from '../common/WishlistButton';
 import { PLACEHOLDER_IMAGES } from '../../utils/placeholderImage';
 
 const DiamondDetail = ({ product, type = 'diamonds' }) => {
@@ -164,7 +165,7 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
     if (!imagePath) return PLACEHOLDER_IMAGES.diamond;
     return imagePath.startsWith('http') 
       ? imagePath 
-      : `${import.meta.env.VITE_LOCAL_API || ''}${imagePath}`;
+      : `${import.meta.env.VITE_API_URL || ''}${imagePath}`;
   };
   
   const processedMainImage = processImageUrl(mainImage);
@@ -370,6 +371,12 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                 
                 {/* Action Buttons */}
                 <div className="absolute top-4 right-4 flex flex-col space-y-2">
+                  {/* <WishlistButton 
+                    productId={product._id}
+                    productType={productType || type}
+                    size="md"
+                  /> */}
+                  
                   <button 
                     className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
                     title="360° View"
@@ -636,12 +643,12 @@ const DiamondDetail = ({ product, type = 'diamonds' }) => {
                     Confirm Order
                   </button>
                   
-                  {/* <button 
-                    className="p-3 border border-primary text-primary hover:bg-primary/5 rounded-lg transition-colors flex items-center justify-center"
-                    title="Add to Wishlist"
-                  >
-                    <Heart size={18} />
-                  </button> */}
+                  <WishlistButton 
+                    productId={product._id}
+                    productType={productType || type}
+                    size="lg"
+                    className="!border-primary !text-primary hover:!bg-primary/5"
+                  />
                 </div>
               </div>
             </div>

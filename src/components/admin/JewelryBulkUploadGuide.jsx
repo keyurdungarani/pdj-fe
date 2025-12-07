@@ -35,7 +35,7 @@ const JewelryBulkUploadGuide = ({ onDownloadTemplate }) => {
     {
       field: 'Jewelry Style',
       description: 'Specific style category of the jewelry',
-      example: 'Solitaire Engagement Ring, Tennis Bracelet, Stud Earrings',
+      example: 'Solitaire Ring, Tennis Bracelet, Stud Earrings',
       validation: 'Must match one of the predefined VDB jewelry styles'
     },
     {
@@ -81,10 +81,10 @@ const JewelryBulkUploadGuide = ({ onDownloadTemplate }) => {
   ];
 
   const jewelryStyles = [
-    'Solitaire Engagement Ring', 'Three Stone Engagement Ring', 'Side Stone Engagement Ring',
-    'Halo Engagement Ring', 'Gemstone Engagement Ring', 'Vintage Engagement Ring',
-    'Diamond Wedding Band', 'Plain Wedding Band', 'Eternity Wedding Band',
-    "Men's Wedding Band", 'Stacking Wedding Band', 'Gemstone Wedding Band',
+    'Solitaire Ring', 'Three Stone Ring', 'Side Stone Ring',
+    'Halo Ring', 'Gemstone Ring', 'Vintage Ring',
+    'Diamond Band', 'Plain Band', 'Eternity Band',
+    "Men's Band", 'Stacking Band', 'Gemstone Band',
     "Men's Fashion Ring", "Women's Fashion Ring", 'Earring Studs', 'Fashion Studs',
     'Drop Earrings', 'Chandelier Earrings', 'Hoop Earrings', 'Tennis Bracelet',
     'Bangle Bracelet', 'Cuff Bracelet', 'Link Bracelet', 'Fashion Bracelet',
@@ -279,10 +279,10 @@ const JewelryBulkUploadGuide = ({ onDownloadTemplate }) => {
         {expandedSections.examples && (
           <div className="mt-4 space-y-4">
             <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <h4 className="font-semibold text-gray-900 mb-2">Engagement Ring Example</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">Ring Example</h4>
               <div className="bg-gray-50 p-3 rounded text-xs font-mono overflow-x-auto">
                 <div>Stock Number: JW001</div>
-                <div>Jewelry Style: Solitaire Engagement Ring</div>
+                <div>Jewelry Style: Solitaire Ring</div>
                 <div>Jewelry Classification: Natural Diamond</div>
                 <div>Center Stone Type: Natural Diamond</div>
                 <div>Total Carat Weight: 1.5</div>

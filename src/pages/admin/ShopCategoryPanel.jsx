@@ -56,26 +56,25 @@ const ShopCategoryPanel = () => {
   const [formErrors, setFormErrors] = useState({});
   const [previewImage, setPreviewImage] = useState(null);
 
-  // Category types options
+  // Category types options (standardized)
   const categoryTypes = [
     { value: 'Jewelry', label: 'Jewelry' },
     { value: 'Diamonds', label: 'Diamonds' },
-    { value: 'Engagement Rings', label: 'Engagement Rings' },
-    { value: 'Wedding Rings', label: 'Wedding Rings' },
+    { value: 'Rings', label: 'Rings' },
+    { value: 'Bands', label: 'Bands' },
     { value: 'Necklaces', label: 'Necklaces' },
     { value: 'Earrings', label: 'Earrings' },
     { value: 'Bracelets', label: 'Bracelets' },
     { value: 'Pendants', label: 'Pendants' },
-    { value: 'Rings', label: 'Rings' },
     { value: 'Custom', label: 'Custom' }
   ];
 
-  // Predefined link options
+  // Predefined link options (standardized URLs)
   const linkOptions = [
     { value: '/jewelry', label: 'All Jewelry' },
     { value: '/diamonds', label: 'All Diamonds' },
-    { value: '/jewelry?category=engagement', label: 'Engagement Rings' },
-    { value: '/jewelry?category=wedding', label: 'Wedding Rings' },
+    { value: '/jewelry?category=ring', label: 'Rings' },
+    { value: '/jewelry?category=band', label: 'Bands' },
     { value: '/jewelry?category=necklace', label: 'Necklaces' },
     { value: '/jewelry?category=earrings', label: 'Earrings' },
     { value: '/jewelry?category=bracelet', label: 'Bracelets' },

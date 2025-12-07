@@ -3,6 +3,9 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { Diamond, Gem, Crown, Upload, Link, X, Plus } from 'lucide-react';
 import { productAPI } from '../../services/api';
+import JewelryVariationManager from '../../components/admin/JewelryVariationManager';
+import DiamondOriginManager from '../../components/admin/DiamondOriginManager';
+import SizeVariationManager from '../../components/admin/SizeVariationManager';
 
 const AddProduct = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -316,7 +319,15 @@ const AddProduct = () => {
     // File uploads
     mainImageFile: null,
     galleryImageFiles: [],
-    videoFile: null
+    videoFile: null,
+    
+    // Jewelry Variations (Metal/Carat options, Diamond origin, Size)
+    metalVariations: [],
+    diamondOriginOptions: [],
+    sizeVariations: [],
+    defaultMetalVariation: 0,
+    defaultDiamondOrigin: 0,
+    defaultSizeVariation: 0
   });
 
   const [errors, setErrors] = useState({});
@@ -372,8 +383,8 @@ const AddProduct = () => {
   // VDB field options for jewelry based on the document and sample data
   const jewelryOptions = {
     jewelryClassifications: ['Natural Diamond', 'Lab Grown Diamond', 'Other', 'Wedding Band', 'Precious Metal'],
-    jewelryCategories: ['Engagement Ring', 'Wedding Band', 'Earrings', 'Necklace', 'Bracelet', 'Pendant', 'Tennis Bracelet', 'Eternity Band'],
-    jewelrySubCategories: ['Solitaire Ring', 'Classic Ring', 'Halo Ring', 'Three Stone Ring', 'Diamond Ring', 'Stacking Ring', 'Huggie Earrings', 'Stud Earrings', 'Drop Earrings', 'Tennis Necklace', 'Chain Bracelet'],
+    jewelryCategories: ['Ring', 'Band', 'Earrings', 'Necklace', 'Bracelet', 'Pendant', 'Tennis Bracelet', 'Eternity Band'],
+    jewelrySubCategories: ['Solitaire', 'Halo', 'Three Stone', 'Side Stone', 'Classic', 'Vintage', 'Modern', 'Stud', 'Drop', 'Huggie', 'Hoop', 'Tennis', 'Chain'],
     metals: ['14K White Gold', '18K White Gold', '22K White Gold', '24K White Gold', '14K Yellow Gold', '18K Yellow Gold', '22K Yellow Gold', '24K Yellow Gold', '14K Rose Gold', '18K Rose Gold', 'Platinum', 'Silver'],
     mounts: ['Mount', 'Semimount'],
     shapes: ['Round', 'Oval', 'Princess', 'Square', 'Emerald', 'Asscher', 'Marquise', 'Pear', 'Heart', 'Cushion', 'Radiant', 'Baguette', 'Briolette', 'Bullet', 'Eurocut'],
@@ -667,6 +678,58 @@ const AddProduct = () => {
       
       if (jewelryForm.videoFile) {
         formData.append('video', jewelryForm.videoFile);
+      }
+      
+      // Handle Metal Variations with file uploads
+      if (jewelryForm.metalVariations && jewelryForm.metalVariations.length > 0) {
+        jewelryForm.metalVariations.forEach((variation, index) => {
+          // Upload main image for variation
+          if (variation.mainImageFile) {
+            formData.append(`metalVariation_${index}_mainImage`, variation.mainImageFile);
+          }
+          // Upload gallery images for variation
+          if (variation.imageFiles && variation.imageFiles.length > 0) {
+            variation.imageFiles.forEach(file => {
+              formData.append(`metalVariation_${index}_images`, file);
+            });
+          }
+        });
+        
+        // Clean variations data (remove file fields before JSON stringify)
+        const cleanVariations = jewelryForm.metalVariations.map(v => ({
+          metal: v.metal,
+          displayName: v.displayName,
+          carat: v.carat,
+          color: v.color,
+          priceAdjustment: v.priceAdjustment || 0,
+          images: v.images || [],
+          mainImage: v.mainImage || '',
+          available: v.available !== false,
+          stockCount: v.stockCount || 1
+        }));
+        
+        formData.append('metalVariations', JSON.stringify(cleanVariations));
+      }
+      
+      // Handle Diamond Origin Options
+      if (jewelryForm.diamondOriginOptions && jewelryForm.diamondOriginOptions.length > 0) {
+        formData.append('diamondOriginOptions', JSON.stringify(jewelryForm.diamondOriginOptions));
+      }
+      
+      // Handle Size Variations
+      if (jewelryForm.sizeVariations && jewelryForm.sizeVariations.length > 0) {
+        formData.append('sizeVariations', JSON.stringify(jewelryForm.sizeVariations));
+      }
+      
+      // Default selections
+      if (jewelryForm.defaultMetalVariation !== undefined) {
+        formData.append('defaultMetalVariation', jewelryForm.defaultMetalVariation);
+      }
+      if (jewelryForm.defaultDiamondOrigin !== undefined) {
+        formData.append('defaultDiamondOrigin', jewelryForm.defaultDiamondOrigin);
+      }
+      if (jewelryForm.defaultSizeVariation !== undefined) {
+        formData.append('defaultSizeVariation', jewelryForm.defaultSizeVariation);
       }
       
       // Prepare specifications object with proper structure
@@ -2635,9 +2698,62 @@ const AddProduct = () => {
         </div>
       </div>
       
+      {/* Metal Variations Section */}
+      <div className="bg-indigo-50 p-6 rounded-lg space-y-4">
+        <JewelryVariationManager
+          variations={jewelryForm.metalVariations}
+          onChange={(variations) => setJewelryForm(prev => ({ ...prev, metalVariations: variations }))}
+          onFileChange={(variationIndex, files, isMain) => {
+            // Handle file uploads for variations
+            const updated = [...jewelryForm.metalVariations];
+            if (isMain && files[0]) {
+              updated[variationIndex] = {
+                ...updated[variationIndex],
+                mainImageFile: files[0]
+              };
+            } else if (files.length > 0) {
+              updated[variationIndex] = {
+                ...updated[variationIndex],
+                imageFiles: Array.from(files)
+              };
+            }
+            setJewelryForm(prev => ({ ...prev, metalVariations: updated }));
+          }}
+        />
+      </div>
+      
+      {/* Diamond Origin Options Section */}
+      <div className="bg-green-50 p-6 rounded-lg space-y-4">
+        <DiamondOriginManager
+          origins={jewelryForm.diamondOriginOptions}
+          onChange={(origins) => setJewelryForm(prev => ({ ...prev, diamondOriginOptions: origins }))}
+          defaultOrigin={jewelryForm.defaultDiamondOrigin}
+          onDefaultChange={(index) => setJewelryForm(prev => ({ ...prev, defaultDiamondOrigin: index }))}
+        />
+      </div>
+      
+      {/* Size Variations Section */}
+      <div className="bg-purple-50 p-6 rounded-lg space-y-4">
+        <SizeVariationManager
+          variations={jewelryForm.sizeVariations}
+          onChange={(variations) => setJewelryForm(prev => ({ ...prev, sizeVariations: variations }))}
+          defaultVariation={jewelryForm.defaultSizeVariation}
+          onDefaultChange={(index) => setJewelryForm(prev => ({ ...prev, defaultSizeVariation: index }))}
+          categoryType={
+            jewelryForm.jewelryCategory === 'Ring' ? 'ring' :
+            jewelryForm.jewelryCategory === 'Band' ? 'ring' :
+            jewelryForm.jewelryCategory === 'Necklace' ? 'necklace' :
+            jewelryForm.jewelryCategory === 'Bracelet' ? 'bracelet' :
+            jewelryForm.jewelryCategory === 'Earrings' ? 'earring' :
+            'general'
+          }
+        />
+      </div>
+      
       {/* Images & Video Section */}
       <div className="space-y-6">
-        <h4 className="font-semibold text-gray-900">Images & Video</h4>
+        <h4 className="font-semibold text-gray-900">Images & Video (Base Product)</h4>
+        <p className="text-sm text-gray-600">These are fallback images if no metal variation is selected</p>
         
         {/* Main Image */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

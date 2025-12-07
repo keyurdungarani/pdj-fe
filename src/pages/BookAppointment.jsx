@@ -11,8 +11,8 @@ const BookAppointment = () => {
 
   const consultationOptions = [
     { value: 'Diamond', label: 'Diamond Selection' },
-    { value: 'Engagement Ring', label: 'Engagement Ring' },
-    { value: 'Wedding Ring', label: 'Wedding Ring' },
+    { value: 'Ring', label: 'Ring' },
+    { value: 'Band', label: 'Band' },
     { value: 'Customize Jewelry', label: 'Custom Jewelry' }
   ];
 

@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Home from './pages/Home';
@@ -15,6 +16,8 @@ import NotFound from './pages/NotFound';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AdminRegister from './pages/AdminRegister';
+import CustomerLoginModal from './components/common/CustomerLoginModal';
+import useLoginPrompt from './hooks/useLoginPrompt';
 import AppointmentsPanel from './pages/admin/AppointmentsPanel';
 import AdminLayout from './components/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -25,6 +28,8 @@ import OrderPanel from './pages/admin/OrderPanel';
 import FeaturedImagesPanel from './pages/admin/FeaturedImagesPanel';
 import ShopCategoryPanel from './pages/admin/ShopCategoryPanel';
 import CustomerReviewsPanel from './pages/admin/CustomerReviewsPanel';
+import UserManagementPanel from './pages/admin/UserManagementPanel';
+import UsersWishlistPanel from './pages/admin/UsersWishlistPanel';
 
 // Import page components
 import Diamonds from './pages/Diamonds';
@@ -37,14 +42,18 @@ import Wedding from './pages/Wedding';
 import Jewelry from './pages/Jewelry';
 import Contact from './pages/Contact';
 import ProductDetailPage from './pages/ProductDetailPage';
+import Wishlist from './pages/Wishlist';
+import Profile from './pages/Profile';
 
 // i want to use values from env file
 // dotenv.config(); 
 
-function App() {
+// Wrapper component to use hooks inside AuthProvider
+function AppContent() {
+  const { showLoginModal, closeLoginModal } = useLoginPrompt();
+  
   return (
-    <Router>
-      <AuthProvider>
+    <>
       <div className="flex flex-col min-h-screen">
           <Routes>
             {/* Public routes with Navbar and Footer */}
@@ -156,6 +165,24 @@ function App() {
                 <Navbar />
                 <main className="flex-grow pt-20">
                   <BookAppointment />
+                </main>
+                <Footer />
+              </>
+            } />
+            <Route path="/wishlist" element={
+              <>
+                <Navbar />
+                <main className="flex-grow pt-20">
+                  <Wishlist />
+                </main>
+                <Footer />
+              </>
+            } />
+            <Route path="/profile" element={
+              <>
+                <Navbar />
+                <main className="flex-grow pt-20">
+                  <Profile />
                 </main>
                 <Footer />
               </>
@@ -325,6 +352,26 @@ function App() {
                 </AdminRoute>
               } 
             />
+            <Route 
+              path="/admin/users/management" 
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <UserManagementPanel />
+                  </AdminLayout>
+                </AdminRoute>
+              } 
+            />
+            <Route 
+              path="/admin/users/wishlists" 
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <UsersWishlistPanel />
+                  </AdminLayout>
+                </AdminRoute>
+              } 
+            />
             
             {/* Catch all - 404 */}
             <Route path="*" element={
@@ -349,8 +396,39 @@ function App() {
           draggable
           pauseOnHover
         />
-      </AuthProvider>
-    </Router>
+      <ToastContainer 
+        position="top-right" 
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+      {/* Auto-trigger login modal after 1 minute for non-logged-in users */}
+      <CustomerLoginModal 
+        isOpen={showLoginModal} 
+        onClose={closeLoginModal} 
+        autoTrigger={true} 
+      />
+    </>
+  );
+}
+
+function App() {
+  // Get Google Client ID from environment variable
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+  return (
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <Router>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </Router>
+    </GoogleOAuthProvider>
   );
 }
 

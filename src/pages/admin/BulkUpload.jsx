@@ -61,7 +61,7 @@ ND001,Available,Round,1.2,VS2,G,,,,8500,10200,-15,9000,7500,-20,"https://example
 
   // Jewelry template based on VDB Jewelry Data Specifications
   const jewelryTemplate = `Stock Number,Jewelry Style,Jewelry Classification,Center Stone Type,Side Stone Type,Total Carat Weight,Total Price,Short Title,Comments,Metal,Mount,Total Number of Stones,Brand,Certificate Url,Center Gemstone Type,Center Stone Shape,Center Stone Color,Center Stone Clarity,Center Stone Fancy Color,Center Stone Intensity,Center Stone Fluorescence,Center Stone Lab,Center Stone Cert Number,Center Stone Enhancement,Center Stone Total Stones,Center Stone Carat Weight,Center Stone Meas Depth,Center Stone Meas Length,Center Stone Meas Width,Center Stone Polish,Center Stone Symmetry,Center Stone Cut,Center Stone Depth,Center Stone Table,Side Stone GemType,Side Stone Total Stone,Side Stone Shape,Side Stone Size,Side Stone Color,Side Stone Clarity,Side Stone FancyColorDominant Color,Side Stone FancyColor Intensity,City,State,Country,Rank,Image Link,Image Link 2,Image Link 3,Image Link 4,Image Link 5,Image Link 6,Video Link
-JW001,Solitaire Engagement Ring,Natural Diamond,Natural Diamond,None,1.5,15000,"Classic Solitaire Ring","Beautiful solitaire engagement ring with natural diamond center stone",18K White Gold,Complete,1,Tiffany & Co,https://example.com/cert.pdf,Diamond,Round Brilliant,F,VS1,,Excellent,None,GIA,GIA123456,None,1,1.5,4.2,7.5,7.5,Excellent,Excellent,Excellent,62.5,57,,,,,,,,,New York,NY,USA,1,"https://example.com/ring1.jpg","https://example.com/ring2.jpg","https://example.com/ring3.jpg",,,,"https://example.com/ring-video.mp4"
+JW001,Solitaire Ring,Natural Diamond,Natural Diamond,None,1.5,15000,"Classic Solitaire Ring","Beautiful solitaire ring with natural diamond center stone",18K White Gold,Complete,1,Tiffany & Co,https://example.com/cert.pdf,Diamond,Round Brilliant,F,VS1,,Excellent,None,GIA,GIA123456,None,1,1.5,4.2,7.5,7.5,Excellent,Excellent,Excellent,62.5,57,,,,,,,,,New York,NY,USA,1,"https://example.com/ring1.jpg","https://example.com/ring2.jpg","https://example.com/ring3.jpg",,,,"https://example.com/ring-video.mp4"
 JW002,Tennis Bracelet,Natural Diamond,Natural Diamond,Natural Diamond,5.0,25000,"Diamond Tennis Bracelet","Elegant tennis bracelet with natural diamonds",14K Yellow Gold,Complete,50,Cartier,,Diamond,Round Brilliant,G,VS2,,Very Good,Faint,GIA,,None,50,0.1,,,,,,,,,Diamond,50,Round,0.1,G,VS2,,,Los Angeles,CA,USA,2,"https://example.com/bracelet1.jpg","https://example.com/bracelet2.jpg",,,,,"https://example.com/bracelet-video.mp4"`;
 
   const handleCategorySelect = (categoryId) => {
@@ -256,7 +256,7 @@ JW002,Tennis Bracelet,Natural Diamond,Natural Diamond,Natural Diamond,5.0,25000,
                 <h5 className="font-semibold text-amber-900 mb-2">Quick Jewelry Upload Tips</h5>
                 <ul className="text-sm text-amber-800 space-y-1">
                   <li>• <strong>Stock Number:</strong> Must be unique (e.g., JW001, RING-2024-001)</li>
-                  <li>• <strong>Jewelry Style:</strong> Must match exactly (e.g., "Solitaire Engagement Ring")</li>
+                  <li>• <strong>Jewelry Style:</strong> Must match exactly (e.g., "Solitaire Ring")</li>
                   <li>• <strong>Classification:</strong> Natural Diamond, Lab-Grown Diamond, or Other</li>
                   <li>• <strong>Image Link:</strong> Required - must be a valid, accessible URL</li>
                   <li>• Click "Show Detailed Guide" above for complete field specifications</li>

@@ -24,6 +24,7 @@ import {
   ShoppingBag
 } from 'lucide-react';
 import ConfirmOrderModal from '../common/ConfirmOrderModal';
+import WishlistButton from '../common/WishlistButton';
 import { PLACEHOLDER_IMAGES } from '../../utils/placeholderImage';
 import { useNavigate } from 'react-router-dom';
 
@@ -43,6 +44,18 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
     quality: false,
     care: false
   });
+  
+  // Jewelry Variations State
+  const [selectedMetalIndex, setSelectedMetalIndex] = useState(
+    product?.jewelrySpecs?.defaultMetalVariation || 0
+  );
+  const [selectedOriginIndex, setSelectedOriginIndex] = useState(
+    product?.jewelrySpecs?.defaultDiamondOrigin || 0
+  );
+  const [selectedSizeIndex, setSelectedSizeIndex] = useState(
+    product?.jewelrySpecs?.defaultSizeVariation || 0
+  );
+  
   const navigate = useNavigate();
   
   const imageContainerRef = useRef(null);
@@ -103,22 +116,82 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
   const displayCaratWeight = totalCaratWeight || legacyCaratWeight;
   const displayStyle = jewelryStyle || legacyStyle;
   
-  const formattedPrice = price?.toLocaleString('en-US') || '';
+  // Get jewelry variations
+  const metalVariations = jewelrySpecs?.metalVariations || [];
+  const diamondOriginOptions = jewelrySpecs?.diamondOriginOptions || [];
+  const sizeVariations = jewelrySpecs?.sizeVariations || [];
+  
+  // Calculate dynamic price based on selected variations
+  const calculateFinalPrice = () => {
+    let finalPrice = price;
+    
+    // Add metal variation price adjustment
+    if (metalVariations.length > 0 && metalVariations[selectedMetalIndex]) {
+      finalPrice += metalVariations[selectedMetalIndex].priceAdjustment || 0;
+    }
+    
+    // Add diamond origin price adjustment
+    if (diamondOriginOptions.length > 0 && diamondOriginOptions[selectedOriginIndex]) {
+      finalPrice += diamondOriginOptions[selectedOriginIndex].priceAdjustment || 0;
+    }
+    
+    // Add size variation price adjustment
+    if (sizeVariations.length > 0 && sizeVariations[selectedSizeIndex]) {
+      finalPrice += sizeVariations[selectedSizeIndex].priceAdjustment || 0;
+    }
+    
+    return finalPrice;
+  };
+  
+  const finalPrice = calculateFinalPrice();
+  const formattedPrice = finalPrice?.toLocaleString('en-US') || '';
   const formattedOriginalPrice = originalPrice?.toLocaleString('en-US') || '';
   const formattedSalePrice = salePrice?.toLocaleString('en-US') || '';
+  
+  // Determine which images to use based on selected metal variation
+  const getDisplayImages = () => {
+    // If metal variation has specific images, use them
+    if (metalVariations.length > 0 && metalVariations[selectedMetalIndex]) {
+      const variation = metalVariations[selectedMetalIndex];
+      const variationImages = [];
+      
+      // Add variation main image
+      if (variation.mainImage) {
+        variationImages.push(variation.mainImage);
+      }
+      
+      // Add variation gallery images
+      if (variation.images && variation.images.length > 0) {
+        variationImages.push(...variation.images);
+      }
+      
+      // If variation has images, return them; otherwise fall back to default
+      if (variationImages.length > 0) {
+        return variationImages;
+      }
+    }
+    
+    // Fall back to default product images
+    return [mainImage, ...galleryImages].filter(Boolean);
+  };
   
   // Process images
   const processImageUrl = (imagePath) => {
     if (!imagePath) return PLACEHOLDER_IMAGES.jewelry;
     return imagePath.startsWith('http') 
       ? imagePath 
-      : `${import.meta.env.VITE_LOCAL_API || ''}${imagePath}`;
+      : `${import.meta.env.VITE_API_URL || ''}${imagePath}`;
   };
   
-  const processedMainImage = processImageUrl(mainImage);
-  const processedGalleryImages = galleryImages.map(img => processImageUrl(img));
-  const allImages = processedMainImage ? [processedMainImage, ...processedGalleryImages] : processedGalleryImages;
-  const currentImageUrl = allImages.length > 0 ? allImages[selectedImage] : PLACEHOLDER_IMAGES.jewelry;
+  const displayImages = getDisplayImages();
+  const processedImages = displayImages.map(img => processImageUrl(img));
+  const allImages = processedImages.length > 0 ? processedImages : [PLACEHOLDER_IMAGES.jewelry];
+  const currentImageUrl = allImages[selectedImage] || PLACEHOLDER_IMAGES.jewelry;
+  
+  // Get selected metal variation name for display
+  const selectedMetalName = metalVariations[selectedMetalIndex]?.displayName || 
+                            metalVariations[selectedMetalIndex]?.metal || 
+                            displayMetal;
   
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
@@ -265,6 +338,12 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
                 
                 {/* Action Buttons */}
                 <div className="absolute top-4 right-4 flex flex-col space-y-2">
+                  {/* <WishlistButton 
+                    productId={product._id}
+                    productType={productType || type}
+                    size="md"
+                  /> */}
+                  
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
@@ -370,6 +449,185 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
                 )}
                 </div>
                 
+                {/* Metal Variation Selector */}
+                {metalVariations && metalVariations.length > 0 && (
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Metal: <span className="font-semibold">{selectedMetalName}</span>
+                      {metalVariations[selectedMetalIndex]?.priceAdjustment !== 0 && (
+                        <span className={`ml-2 text-sm ${
+                          metalVariations[selectedMetalIndex].priceAdjustment > 0 
+                            ? 'text-red-600' 
+                            : 'text-green-600'
+                        }`}>
+                          ({metalVariations[selectedMetalIndex].priceAdjustment > 0 ? '+' : ''}
+                          ${metalVariations[selectedMetalIndex].priceAdjustment})
+                        </span>
+                      )}
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {metalVariations.map((variation, index) => {
+                        const colorClass = variation.color === 'Yellow' ? 'bg-yellow-400' :
+                                          variation.color === 'Rose' ? 'bg-rose-400' :
+                                          variation.color === 'White' ? 'bg-gray-300' :
+                                          'bg-gray-400';
+                        
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => {
+                              setSelectedMetalIndex(index);
+                              setSelectedImage(0); // Reset to first image when changing metal
+                            }}
+                            disabled={!variation.available}
+                            className={`relative p-3 border-2 rounded-lg transition-all ${
+                              selectedMetalIndex === index
+                                ? 'border-primary bg-primary/5'
+                                : 'border-gray-300 hover:border-gray-400'
+                            } ${!variation.available ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          >
+                            <div className="flex items-center space-x-2">
+                              <div className={`w-6 h-6 rounded-full ${colorClass} border-2 border-gray-400`} />
+                              <div className="text-left flex-1">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {variation.displayName || variation.metal}
+                                </div>
+                                {variation.priceAdjustment !== 0 && (
+                                  <div className={`text-xs font-medium ${
+                                    variation.priceAdjustment > 0 ? 'text-red-600' : 'text-green-600'
+                                  }`}>
+                                    {variation.priceAdjustment > 0 ? '+' : ''}${variation.priceAdjustment}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            {!variation.available && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-white/75 rounded-lg">
+                                <span className="text-xs text-red-600 font-medium">Out of Stock</span>
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Diamond Origin Selector */}
+                {diamondOriginOptions && diamondOriginOptions.length > 0 && (
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Diamond Origin
+                      {diamondOriginOptions[selectedOriginIndex]?.priceAdjustment !== 0 && (
+                        <span className={`ml-2 text-sm ${
+                          diamondOriginOptions[selectedOriginIndex].priceAdjustment > 0 
+                            ? 'text-red-600' 
+                            : 'text-green-600'
+                        }`}>
+                          ({diamondOriginOptions[selectedOriginIndex].priceAdjustment > 0 ? '+' : ''}
+                          ${diamondOriginOptions[selectedOriginIndex].priceAdjustment})
+                        </span>
+                      )}
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {diamondOriginOptions.map((origin, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setSelectedOriginIndex(index)}
+                          disabled={!origin.available}
+                          className={`relative p-4 border-2 rounded-lg transition-all text-left ${
+                            selectedOriginIndex === index
+                              ? 'border-primary bg-primary/5'
+                              : 'border-gray-300 hover:border-gray-400'
+                          } ${!origin.available ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-medium text-gray-900">
+                              {origin.displayName || origin.origin}
+                            </span>
+                            {origin.origin === 'Lab-Grown' && (
+                              <span className="text-green-600 text-xs">♻️ Eco-Friendly</span>
+                            )}
+                          </div>
+                          {origin.priceAdjustment !== 0 && (
+                            <div className={`text-sm font-medium ${
+                              origin.priceAdjustment > 0 ? 'text-red-600' : 'text-green-600'
+                            }`}>
+                              {origin.priceAdjustment > 0 ? '+' : ''}${origin.priceAdjustment}
+                            </div>
+                          )}
+                          {origin.description && (
+                            <p className="text-xs text-gray-600 mt-1">{origin.description}</p>
+                          )}
+                          {!origin.available && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-white/75 rounded-lg">
+                              <span className="text-xs text-red-600 font-medium">Not Available</span>
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Size Variations Section */}
+                {sizeVariations.length > 0 && (
+                  <div className="mb-6">
+                    <label className="block font-medium text-gray-900 mb-3 flex items-center gap-2">
+                      <span className="text-lg">📏</span>
+                      <span>Select Size</span>
+                      {sizeVariations[selectedSizeIndex]?.priceAdjustment !== 0 && (
+                        <span className={`ml-2 text-sm ${
+                          sizeVariations[selectedSizeIndex].priceAdjustment > 0 
+                            ? 'text-red-600' 
+                            : 'text-green-600'
+                        }`}>
+                          ({sizeVariations[selectedSizeIndex].priceAdjustment > 0 ? '+' : ''}
+                          ${sizeVariations[selectedSizeIndex].priceAdjustment})
+                        </span>
+                      )}
+                    </label>
+                    <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
+                      {sizeVariations.map((sizeOption, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setSelectedSizeIndex(index)}
+                          disabled={!sizeOption.available}
+                          className={`relative p-3 border-2 rounded-lg transition-all text-center ${
+                            selectedSizeIndex === index
+                              ? 'border-purple-500 bg-purple-50 shadow-md'
+                              : 'border-gray-300 hover:border-gray-400'
+                          } ${!sizeOption.available ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                          <div className="font-medium text-gray-900 text-sm">
+                            {sizeOption.displayName || sizeOption.size}
+                          </div>
+                          {sizeOption.priceAdjustment !== 0 && (
+                            <div className={`text-xs font-medium mt-1 ${
+                              sizeOption.priceAdjustment > 0 ? 'text-red-600' : 'text-green-600'
+                            }`}>
+                              {sizeOption.priceAdjustment > 0 ? '+' : ''}${sizeOption.priceAdjustment}
+                            </div>
+                          )}
+                          {sizeOption.description && (
+                            <p className="text-xs text-gray-500 mt-1">{sizeOption.description}</p>
+                          )}
+                          {selectedSizeIndex === index && (
+                            <div className="absolute top-1 right-1">
+                              <CheckCircle size={16} className="text-purple-600" fill="currentColor" />
+                            </div>
+                          )}
+                          {!sizeOption.available && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-white/75 rounded-lg">
+                              <span className="text-xs text-red-600 font-medium">Not Available</span>
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
                 {/* Price - MONTSERRAT FOR PRICING */}
                 <div className="mb-6">
                   <div className="flex items-center space-x-2">
@@ -462,12 +720,12 @@ const JewelryDetail = ({ product, type = 'jewelry' }) => {
                     Confirm Order
                   </button>
                   
-                  {/* <button 
-                    className="p-3 border border-primary text-primary hover:bg-primary/5 rounded-lg transition-colors flex items-center justify-center"
-                    title="Add to Wishlist"
-                  >
-                    <Heart size={18} />
-                  </button> */}
+                  <WishlistButton 
+                    productId={product._id}
+                    productType={productType || type}
+                    size="lg"
+                    className="!border-primary !text-primary hover:!bg-primary/5"
+                  />
                 </div>
                 
                 {/* Customization Section */}

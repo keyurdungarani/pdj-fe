@@ -25,10 +25,10 @@ const JewelryFilters = ({
     }));
   };
 
-  // Filter options based on actual jewelrySpecs schema
+  // Filter options - standardized categories
   const jewelryCategories = [
-    { label: 'Engagement Ring', value: 'Engagement Ring' },
-    { label: 'Wedding Band', value: 'Wedding Band' },
+    { label: 'Ring', value: 'Ring' },
+    { label: 'Band', value: 'Band' },
     { label: 'Earrings', value: 'Earrings' },
     { label: 'Necklace', value: 'Necklace' },
     { label: 'Bracelet', value: 'Bracelet' },
@@ -38,17 +38,19 @@ const JewelryFilters = ({
   ];
 
   const jewelrySubCategories = [
-    { label: 'Solitaire Ring', value: 'Solitaire Ring' },
-    { label: 'Classic Ring', value: 'Classic Ring' },
-    { label: 'Halo Ring', value: 'Halo Ring' },
-    { label: 'Three Stone Ring', value: 'Three Stone Ring' },
-    { label: 'Diamond Ring', value: 'Diamond Ring' },
-    { label: 'Stacking Ring', value: 'Stacking Ring' },
-    { label: 'Huggie Earrings', value: 'Huggie Earrings' },
-    { label: 'Stud Earrings', value: 'Stud Earrings' },
-    { label: 'Drop Earrings', value: 'Drop Earrings' },
-    { label: 'Tennis Necklace', value: 'Tennis Necklace' },
-    { label: 'Chain Bracelet', value: 'Chain Bracelet' }
+    { label: 'Solitaire', value: 'Solitaire' },
+    { label: 'Halo', value: 'Halo' },
+    { label: 'Three Stone', value: 'Three Stone' },
+    { label: 'Side Stone', value: 'Side Stone' },
+    { label: 'Classic', value: 'Classic' },
+    { label: 'Vintage', value: 'Vintage' },
+    { label: 'Modern', value: 'Modern' },
+    { label: 'Stud', value: 'Stud' },
+    { label: 'Drop', value: 'Drop' },
+    { label: 'Huggie', value: 'Huggie' },
+    { label: 'Hoop', value: 'Hoop' },
+    { label: 'Tennis', value: 'Tennis' },
+    { label: 'Chain', value: 'Chain' }
   ];
 
   const metals = [
